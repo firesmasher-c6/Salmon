@@ -1,0 +1,1 @@
+package dev.firesmasher.salmon;

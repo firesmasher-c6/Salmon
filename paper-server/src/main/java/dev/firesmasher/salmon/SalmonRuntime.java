@@ -1,0 +1,376 @@
+package dev.firesmasher.salmon;
+
+import dev.firesmasher.salmon.PluginExecutionMetrics.Snapshot;
+import dev.firesmasher.salmon.modifiers.SalmonScriptManager;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+import java.nio.file.Path;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Mob;
+import org.bukkit.entity.Monster;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.craftbukkit.CraftServer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+
+public final class SalmonRuntime implements AutoCloseable {
+    private static final Logger LOGGER = Logger.getLogger("Salmon");
+    private static volatile SalmonRuntime instance;
+    private static volatile boolean eventTimingEnabled;
+    private static volatile boolean taskTimingEnabled;
+
+    private final CraftServer server;
+    private final SalmonConfiguration configuration;
+    private final ScheduledExecutorService executor;
+    private final SalmonScriptManager scriptManager;
+    private final Map<String, Long> lastSlowWarningNanos = new HashMap<>();
+
+    private SalmonRuntime(final CraftServer server, final SalmonConfiguration configuration, final Path serverDirectory) throws IOException {
+        this.server = server;
+        this.configuration = configuration;
+        this.scriptManager = new SalmonScriptManager(server, serverDirectory);
+        this.executor = Executors.newSingleThreadScheduledExecutor(task -> {
+            final Thread thread = new Thread(task, "SalmonMC Thread");
+            thread.setDaemon(true);
+            return thread;
+        });
+    }
+
+    public static SalmonRuntime start(final CraftServer server, final SalmonConfiguration configuration, final Path serverDirectory) throws IOException {
+        final SalmonRuntime runtime = new SalmonRuntime(server, configuration, serverDirectory);
+        instance = runtime;
+        final SalmonConfiguration.Options options = configuration.options();
+        PluginExecutionMetrics.setEnabled(configuration.enabled() && options.pluginMetricsEnabled());
+        eventTimingEnabled = configuration.enabled() && options.pluginMetricsEnabled() && options.pluginTrackEventHandlers();
+        taskTimingEnabled = configuration.enabled() && options.pluginMetricsEnabled() && options.pluginTrackSchedulerTasks();
+
+        if (configuration.enabled()) {
+            runtime.executor.execute(() -> {
+                LOGGER.info("Salmon optimizer started on " + Thread.currentThread().getName());
+                LOGGER.info("Salmon settings: chunk caps " + (options.chunkCapsEnabled() ? "enabled" : "disabled")
+                    + " (max " + options.maxPrimedTntPerChunk() + " primed TNT and "
+                    + options.maxHostileEntitiesPerChunk() + " hostile, "
+                    + options.maxPassiveEntitiesPerChunk() + " passive, "
+                    + options.maxWaterEntitiesPerChunk() + " water, and "
+                    + options.maxAmbientEntitiesPerChunk() + " ambient entities per chunk), persistent-mob cleanup "
+                    + (options.cleanupEnabled() ? "enabled" : "disabled") + ", plugin metrics "
+                    + (options.pluginMetricsEnabled() ? "enabled" : "disabled"));
+            });
+        } else {
+            LOGGER.warning("Salmon is disabled in salmon.yml; optimizer and scripts will not run");
+        }
+        if (configuration.enabled() && options.pluginMetricsEnabled()) {
+            runtime.executor.scheduleWithFixedDelay(
+                runtime::reportPluginMetrics,
+                options.pluginReportIntervalSeconds(),
+                options.pluginReportIntervalSeconds(),
+                TimeUnit.SECONDS
+            );
+        }
+        if (configuration.enabled() && options.cleanupEnabled()) {
+            runtime.executor.scheduleWithFixedDelay(
+                runtime::requestPersistentMobScan,
+                options.cleanupIntervalSeconds(),
+                options.cleanupIntervalSeconds(),
+                TimeUnit.SECONDS
+            );
+        }
+        return runtime;
+    }
+
+    public static boolean allowSpawn(final Level level, final net.minecraft.world.entity.Entity entity) {
+        final SalmonRuntime runtime = instance;
+        if (runtime == null || !runtime.configuration.enabled()) {
+            return true;
+        }
+
+        final SalmonConfiguration.Options options = runtime.configuration.options();
+        if (!options.chunkCapsEnabled()) {
+            return true;
+        }
+        final Level world = level;
+        final int maxTnt = options.maxPrimedTntPerChunk();
+        final int maxHostiles = options.maxHostileEntitiesPerChunk();
+        final int maxPassive = options.maxPassiveEntitiesPerChunk();
+        final int maxWater = options.maxWaterEntitiesPerChunk();
+        final int maxAmbient = options.maxAmbientEntitiesPerChunk();
+        final MobCategory category = entity.getType().getCategory();
+        final boolean isTnt = entity.getType() == EntityType.TNT;
+        final boolean isHostile = category == MobCategory.MONSTER;
+        final boolean isPassive = category == MobCategory.CREATURE;
+        final boolean isWater = isWaterCategory(category);
+        final boolean isAmbient = category == MobCategory.AMBIENT;
+        if ((maxTnt == 0 || !isTnt)
+            && (maxHostiles == 0 || !isHostile)
+            && (maxPassive == 0 || !isPassive)
+            && (maxWater == 0 || !isWater)
+            && (maxAmbient == 0 || !isAmbient)) {
+            return true;
+        }
+
+        final int chunkX = entity.blockPosition().getX() >> 4;
+        final int chunkZ = entity.blockPosition().getZ() >> 4;
+        final int minX = chunkX << 4;
+        final int minZ = chunkZ << 4;
+        final AABB chunkBounds = new AABB(minX, world.getMinY(), minZ, minX + 16, world.getMaxY(), minZ + 16);
+        int tntCount = 0;
+        int hostileCount = 0;
+        int passiveCount = 0;
+        int waterCount = 0;
+        int ambientCount = 0;
+        for (net.minecraft.world.entity.Entity existing : world.getEntities(entity, chunkBounds)) {
+            if (maxTnt > 0 && isTnt && existing.getType() == EntityType.TNT) {
+                tntCount++;
+            }
+            final MobCategory existingCategory = existing.getType().getCategory();
+            if (maxHostiles > 0 && isHostile && existingCategory == MobCategory.MONSTER
+                && (options.countNamedHostiles() || existing.getCustomName() == null)) {
+                hostileCount++;
+            }
+            if (maxPassive > 0 && isPassive && existingCategory == MobCategory.CREATURE) {
+                passiveCount++;
+            }
+            if (maxWater > 0 && isWater && isWaterCategory(existingCategory)) {
+                waterCount++;
+            }
+            if (maxAmbient > 0 && isAmbient && existingCategory == MobCategory.AMBIENT) {
+                ambientCount++;
+            }
+        }
+
+        return !(isTnt && maxTnt > 0 && tntCount >= maxTnt)
+            && !(isHostile && maxHostiles > 0 && (options.countNamedHostiles() || entity.getCustomName() == null)
+                && hostileCount >= maxHostiles)
+            && !(isPassive && maxPassive > 0 && passiveCount >= maxPassive)
+            && !(isWater && maxWater > 0 && waterCount >= maxWater)
+            && !(isAmbient && maxAmbient > 0 && ambientCount >= maxAmbient);
+    }
+
+    private static boolean isWaterCategory(final MobCategory category) {
+        return category == MobCategory.AXOLOTLS
+            || category == MobCategory.UNDERGROUND_WATER_CREATURE
+            || category == MobCategory.WATER_AMBIENT
+            || category == MobCategory.WATER_CREATURE;
+    }
+
+    public static SalmonRuntime getInstance() {
+        return instance;
+    }
+
+    public boolean isEnabled() {
+        return this.configuration.enabled();
+    }
+
+    public void executeBackground(final Runnable action) {
+        this.executor.execute(action);
+    }
+
+    public void loadScriptsAtStartup() {
+        this.scriptManager.loadAtStartup();
+    }
+
+    public boolean reloadScripts() {
+        if (!this.configuration.enabled()) {
+            return false;
+        }
+        this.scriptManager.loadAtStartup();
+        return true;
+    }
+
+    public static void recordPluginEvent(final Plugin plugin, final long elapsedNanos) {
+        if (eventTimingEnabled) {
+            PluginExecutionMetrics.recordEvent(plugin, elapsedNanos);
+        }
+    }
+
+    public static void recordPluginTask(final Plugin plugin, final long elapsedNanos) {
+        if (taskTimingEnabled) {
+            PluginExecutionMetrics.recordTask(plugin, elapsedNanos);
+        }
+    }
+
+    public static long beginPluginEventTiming() {
+        return eventTimingEnabled ? System.nanoTime() : Long.MIN_VALUE;
+    }
+
+    public static void finishPluginEventTiming(final Plugin plugin, final long startedAt) {
+        if (startedAt != Long.MIN_VALUE) {
+            recordPluginEvent(plugin, System.nanoTime() - startedAt);
+        }
+    }
+
+    public static long beginPluginTaskTiming() {
+        return taskTimingEnabled ? System.nanoTime() : Long.MIN_VALUE;
+    }
+
+    public static void finishPluginTaskTiming(final Plugin plugin, final long startedAt) {
+        if (startedAt != Long.MIN_VALUE) {
+            recordPluginTask(plugin, System.nanoTime() - startedAt);
+        }
+    }
+
+    private void reportPluginMetrics() {
+        final SalmonConfiguration.Options options = this.configuration.options();
+        final long minimumNanos = TimeUnit.MILLISECONDS.toNanos(options.pluginMinimumReportMillis());
+        final long slowCallNanos = TimeUnit.MILLISECONDS.toNanos(options.pluginSlowCallWarningMillis());
+        final List<Snapshot> snapshots = PluginExecutionMetrics.drain();
+        final List<Snapshot> entries = snapshots.stream()
+            .filter(snapshot -> snapshot.totalNanos() >= minimumNanos)
+            .limit(options.pluginMaxEntries())
+            .toList();
+        if (!entries.isEmpty()) {
+            final StringBuilder report = new StringBuilder("Plugin execution summary (last ")
+                .append(options.pluginReportIntervalSeconds()).append("s):");
+            for (Snapshot snapshot : entries) {
+                report.append(System.lineSeparator())
+                    .append(" - ").append(snapshot.plugin())
+                    .append(": ").append(snapshot.calls()).append(" calls, ")
+                    .append(String.format("%.2f", snapshot.totalNanos() / 1_000_000.0)).append(" ms total (")
+                    .append(snapshot.eventCalls()).append(" events / ")
+                    .append(String.format("%.2f", snapshot.eventNanos() / 1_000_000.0)).append(" ms, ")
+                    .append(snapshot.taskCalls()).append(" tasks / ")
+                    .append(String.format("%.2f", snapshot.taskNanos() / 1_000_000.0)).append(" ms), max call ")
+                    .append(String.format("%.2f", snapshot.maxCallNanos() / 1_000_000.0)).append(" ms");
+            }
+            LOGGER.info(report.toString());
+        }
+        if (slowCallNanos > 0L) {
+            final long now = System.nanoTime();
+            final long cooldownNanos = TimeUnit.SECONDS.toNanos(options.pluginReportIntervalSeconds());
+            for (Snapshot snapshot : snapshots) {
+                if (snapshot.maxCallNanos() < slowCallNanos) {
+                    continue;
+                }
+                final Long lastWarning = this.lastSlowWarningNanos.get(snapshot.plugin());
+                if (lastWarning == null || now - lastWarning >= cooldownNanos) {
+                    this.lastSlowWarningNanos.put(snapshot.plugin(), now);
+                    LOGGER.warning("Slow plugin operation observed: " + snapshot.plugin()
+                        + " took up to " + String.format("%.2f", snapshot.maxCallNanos() / 1_000_000.0) + " ms");
+                }
+            }
+        }
+    }
+
+    private void requestPersistentMobScan() {
+        this.server.getServer().execute(this::snapshotPersistentMobs);
+    }
+
+    private void snapshotPersistentMobs() {
+        final SalmonConfiguration.Options options = this.configuration.options();
+        if (!this.configuration.enabled() || !options.cleanupEnabled()) {
+            return;
+        }
+        final long minimumAgeTicks = TimeUnit.SECONDS.toMillis(options.cleanupMinimumAgeSeconds()) / 50L;
+        final long protectedRadiusSquared = (long) options.cleanupProtectPlayerRadius() * options.cleanupProtectPlayerRadius();
+        final List<MobCandidate> candidates = new ArrayList<>();
+
+        for (World world : this.server.getWorlds()) {
+            final List<Player> players = world.getPlayers();
+            for (Entity entity : world.getEntities()) {
+                if (!(entity instanceof Monster) || !(entity instanceof Mob mob)
+                    || mob.getRemoveWhenFarAway()
+                    || (long) entity.getTicksLived() < minimumAgeTicks
+                    || !matchesCleanupType(entity, options.cleanupEntityTypes())
+                    || isProtected(entity, mob, options, players, protectedRadiusSquared)) {
+                    continue;
+                }
+                candidates.add(new MobCandidate(world.getUID(), entity.getUniqueId(), entity.getTicksLived()));
+            }
+        }
+
+        if (candidates.isEmpty()) {
+            return;
+        }
+
+        this.executor.execute(() -> {
+            candidates.sort(Comparator.comparingInt(MobCandidate::ticksLived).reversed());
+            final List<MobCandidate> selected = List.copyOf(candidates.subList(0, Math.min(candidates.size(), options.cleanupMaxPerPass())));
+            this.server.getServer().execute(() -> this.removePersistentMobs(selected, options));
+        });
+    }
+
+    private static boolean matchesCleanupType(final Entity entity, final Set<String> entityTypes) {
+        return entityTypes.isEmpty() || entityTypes.contains(entity.getType().getKey().toString().toLowerCase(java.util.Locale.ROOT));
+    }
+
+    private static boolean isProtected(
+        final Entity entity,
+        final Mob mob,
+        final SalmonConfiguration.Options options,
+        final List<Player> players,
+        final long protectedRadiusSquared
+    ) {
+        if ((options.cleanupExcludeNamed() && entity.getCustomName() != null)
+            || (options.cleanupExcludeTamed() && entity instanceof Tameable tameable && tameable.isTamed())
+            || (options.cleanupExcludeLeashed() && mob.isLeashed())
+            || (options.cleanupExcludePassengers() && (entity.isInsideVehicle() || !entity.getPassengers().isEmpty()))) {
+            return true;
+        }
+        if (protectedRadiusSquared == 0L) {
+            return false;
+        }
+        for (Player player : players) {
+            final double dx = entity.getX() - player.getX();
+            final double dy = entity.getY() - player.getY();
+            final double dz = entity.getZ() - player.getZ();
+            if (dx * dx + dy * dy + dz * dz <= protectedRadiusSquared) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removePersistentMobs(final List<MobCandidate> candidates, final SalmonConfiguration.Options options) {
+        int removed = 0;
+        for (MobCandidate candidate : candidates) {
+            final World world = this.server.getWorld(candidate.worldId());
+            if (world == null) {
+                continue;
+            }
+            final Entity entity = world.getEntity(candidate.entityId());
+            if (entity == null) {
+                continue;
+            }
+            if (!entity.isValid() || !(entity instanceof Monster) || !(entity instanceof Mob mob)
+                || mob.getRemoveWhenFarAway()
+                || (long) entity.getTicksLived() < TimeUnit.SECONDS.toMillis(options.cleanupMinimumAgeSeconds()) / 50L
+                || !matchesCleanupType(entity, options.cleanupEntityTypes())
+                || isProtected(entity, mob, options, world.getPlayers(),
+                    (long) options.cleanupProtectPlayerRadius() * options.cleanupProtectPlayerRadius())) {
+                continue;
+            }
+            entity.remove();
+            removed++;
+        }
+        if (removed > 0) {
+            LOGGER.info("Removed " + removed + " opted-in persistent hostile mob(s) during cleanup");
+        }
+    }
+
+    @Override
+    public void close() {
+        eventTimingEnabled = false;
+        taskTimingEnabled = false;
+        PluginExecutionMetrics.setEnabled(false);
+        this.executor.shutdown();
+        instance = null;
+    }
+
+    private record MobCandidate(UUID worldId, UUID entityId, int ticksLived) {
+    }
+}

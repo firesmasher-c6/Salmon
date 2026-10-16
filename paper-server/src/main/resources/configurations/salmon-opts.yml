@@ -1,0 +1,159 @@
+# ============================================================================
+# Salmon Optimization Settings
+#
+# These are active settings, not examples. Salmon reads this file at server
+# startup and applies the values below. Edit the values to tune Salmon for your
+# server; leave an option unchanged to keep the safe setting shown here.
+#
+# Salmon separates optimizations into three groups:
+#   chunks: limits entities allowed to spawn in an individual chunk.
+#   entities.cleanup: optionally removes old persistent hostile mobs.
+#   plugins.metrics: measures plugin event handlers and scheduled task time.
+#
+# Chunk caps are enabled by default with limits for TNT and hostile, passive,
+# water, and ambient mobs. They reject new matching spawns in crowded chunks.
+# Entity cleanup remains disabled by default because it permanently removes
+# matching mobs from existing worlds. Plugin metrics only measure and report
+# execution time; they do not disable, restart, modify, or otherwise control
+# plugins.
+#
+# Values in this file override the corresponding values in
+# config/salmon-defaults.yml. The defaults file is a reference/fallback; edit
+# this file when you want an optimization to use a different value.
+#
+# SAFETY:
+#   - Setting chunks.enabled to true can reject entity spawns after a cap.
+#   - Setting entities.cleanup.enabled to true permanently removes eligible
+#     mobs. Back up worlds before enabling cleanup or widening its entity list.
+#   - "run command" scripts have console authority; plugin metrics do not.
+#   - Use spaces for indentation. Do not use tabs or change the YAML structure.
+#   - Restart the server after changing any value. Changes are not hot-reloaded.
+#   - Invalid YAML or invalid numeric values stop startup with an error.
+#
+# Website: https://codestuff.pages.dev (Deprecated)
+# GitHub: https://github.com/firesmasher-c6
+# Guns.lol: https://guns.lol/firesmasher
+# YouTube: https://youtube.com/@FireSmasher
+# TikTok: https://www.tiktok.com/@FireSmasher_C6
+# TalonAI: https://talonai.wisp.uno
+#
+# Credits:
+#   Lead Architect: FireSmasher
+#   Lead Developer: FireSmasher
+#   Lead Programmer: GitHub Copilot
+#   Publisher: FireSmasher
+#   License: GPLv3
+# ============================================================================
+
+chunks:
+  # Enables Salmon's per-chunk spawn limits. This does not remove existing
+  # entities; it rejects new matching entities once a limit is reached.
+  enabled: true
+
+  # Maximum primed TNT entities permitted in a chunk at spawn time.
+  # Set to 0 to disable this individual cap. A cap can prevent TNT chains or
+  # other large explosions from growing, and may affect redstone machines.
+  max-primed-tnt-per-chunk: 16
+
+  # Maximum hostile-category entities permitted in a chunk at spawn time.
+  # This includes vanilla hostile mobs and other entities categorized as
+  # monsters. Set to 0 to disable this individual cap.
+  max-hostile-entities-per-chunk: 32
+
+  # Maximum passive land creatures (for example cows, pigs, and sheep) allowed
+  # in a chunk. Spawns beyond the limit are rejected, which can limit animal
+  # farms and breeding. Set to 0 to disable this category's cap.
+  max-passive-entities-per-chunk: 64
+
+  # Maximum water creatures allowed in a chunk, including fish and axolotls.
+  # Spawns beyond the limit are rejected and may affect aquatic farms.
+  # Set to 0 to disable this category's cap.
+  max-water-entities-per-chunk: 48
+
+  # Maximum ambient creatures (primarily bats) allowed in a chunk.
+  # Spawns beyond the limit are rejected. Set to 0 to disable this cap.
+  max-ambient-entities-per-chunk: 16
+
+  # Whether hostile entities with custom names count toward the hostile cap.
+  # Keeping this true makes the cap predictable. Set false only if named mobs
+  # should be allowed in addition to the configured hostile limit.
+  count-named-hostiles: true
+
+entities:
+  cleanup:
+    # Enables periodic removal of selected persistent hostile mobs.
+    # This feature is disabled by default because entity removal is permanent
+    # and may affect farms, adventure maps, or intentionally persistent mobs.
+    enabled: false
+
+    # Delay between cleanup scans, measured in seconds.
+    # Longer intervals reduce scan overhead. Short intervals cause more
+    # frequent world scans and can add work to the Minecraft server thread.
+    interval-seconds: 300
+
+    # Minimum mob age before it becomes eligible for cleanup, in seconds.
+    # A mob must be older than this threshold at scan time. This is a minimum
+    # age, not a promise that a mob will be removed exactly at this time.
+    minimum-age-seconds: 21600
+
+    # Upper bound on removals for one scan. This limits sudden cleanup bursts.
+    # Lower values spread removal over multiple scans; higher values clear
+    # eligible mobs more quickly and can cause a noticeable gameplay change.
+    max-per-pass: 16
+
+    # Namespaced hostile entity identifiers eligible for cleanup.
+    # The list below targets zombies only. Use entries such as
+    # minecraft:skeleton to include additional types. An empty list means all
+    # hostile entity types, so keep an explicit list unless that is intended.
+    entity-types:
+      - minecraft:zombie
+
+    # Keep mobs with custom names. Disable only if named mobs should also be
+    # eligible for cleanup; their names do not otherwise protect them.
+    exclude-named: true
+
+    # Keep tamed entities. This protects player-owned entities when applicable.
+    exclude-tamed: true
+
+    # Keep leashed entities so cleanup does not break player-built setups.
+    exclude-leashed: true
+
+    # Keep entities that are riding another entity or carrying passengers.
+    # Disable only when these relationships should not protect a mob.
+    exclude-passengers: true
+
+    # Protect mobs within this many blocks of any player.
+    # Distance is measured in 3D. Set to 0 to disable player-distance
+    # protection; named, tamed, leashed, and passenger protections remain
+    # controlled by their separate options above.
+    protect-player-radius: 32
+
+plugins:
+  metrics:
+    # Collect timing statistics for plugin event handlers and Bukkit scheduler
+    # tasks. Salmon reports measurements; it never disables or restarts plugins.
+    enabled: true
+
+    # How often to write a summary to the server log, in seconds.
+    # Reporting work (aggregation and formatting) runs on SalmonMC Thread.
+    report-interval-seconds: 60
+
+    # Maximum number of highest-total-time plugins included in each report.
+    # This limits log length; it does not limit which plugins are measured.
+    max-plugins-in-report: 10
+
+    # Suppress report entries below this total execution time per interval,
+    # measured in milliseconds. Set to 0 to include plugins with any activity.
+    minimum-report-ms: 1
+
+    # Measure time spent inside each registered plugin event listener.
+    # Disable this to avoid event-handler timing collection.
+    track-event-handlers: true
+
+    # Measure time spent running Bukkit-scheduled plugin tasks.
+    # This does not include arbitrary plugin-created threads.
+    track-scheduler-tasks: true
+
+    # Log a slow-call warning when a measured operation takes at least this
+    # many milliseconds. Set to 0 to disable slow-call warnings.
+    slow-call-warning-ms: 50

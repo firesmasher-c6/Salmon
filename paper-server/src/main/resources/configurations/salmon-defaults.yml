@@ -1,0 +1,87 @@
+# ============================================================================
+# Salmon Optimization Defaults
+#
+# This file provides the base values for config/salmon-opts.yml. Edit
+# salmon-opts.yml to override individual settings; the defaults file documents
+# the complete set of options and is restored only if it is missing.
+#
+# Chunk caps are enabled by default to keep dense TNT and hostile-mob buildup
+# in check. They reject new matching spawns after a per-chunk cap is reached.
+# Persistent-mob cleanup stays disabled by default because it permanently
+# removes entities from existing worlds.
+#
+# Website: https://codestuff.pages.dev (Deprecated)
+# GitHub: https://github.com/firesmasher-c6
+# Guns.lol: https://guns.lol/firesmasher
+# YouTube: https://youtube.com/@FireSmasher
+# TikTok: https://www.tiktok.com/@FireSmasher_C6
+# TalonAI: https://talonai.wisp.uno
+#
+# Credits:
+#   Lead Architect: FireSmasher
+#   Lead Developer: FireSmasher
+#   Lead Programmer: GitHub Copilot
+#   Publisher: FireSmasher
+#   License: GPLv3
+#
+# Breaking YAML indentation or changing a value to the wrong type can prevent
+# startup. Keep indentation spaces (not tabs), and make a backup before editing.
+# Restart the server after changing Salmon configuration files.
+# ============================================================================
+
+chunks:
+  # Limits new TNT and hostile spawns when a chunk reaches either configured cap.
+  enabled: true
+  # Maximum primed TNT entities allowed per chunk; 0 disables only this cap.
+  max-primed-tnt-per-chunk: 16
+  # Maximum hostile-category entities allowed per chunk; 0 disables only this cap.
+  max-hostile-entities-per-chunk: 32
+  # Maximum passive land creatures per chunk; spawns beyond the cap are rejected.
+  max-passive-entities-per-chunk: 64
+  # Maximum water creatures, fish, and axolotls per chunk.
+  max-water-entities-per-chunk: 48
+  # Maximum ambient creatures, primarily bats, per chunk.
+  max-ambient-entities-per-chunk: 16
+  # Include named hostile entities in the cap so naming cannot bypass the limit.
+  count-named-hostiles: true
+
+entities:
+  cleanup:
+    # Permanently removes eligible, old, persistent hostile mobs; disabled to protect existing worlds.
+    enabled: false
+    # Seconds between scans. Lower values increase main-thread scan work.
+    interval-seconds: 300
+    # Minimum age in seconds before an eligible mob may be removed.
+    minimum-age-seconds: 21600
+    # Maximum removals in one pass to limit sudden gameplay changes.
+    max-per-pass: 16
+    # Namespaced entity types eligible for removal. An empty list means all hostile types.
+    entity-types:
+      - minecraft:zombie
+    # Protect mobs with custom names; disabling this can remove named entities.
+    exclude-named: true
+    # Protect tamed mobs; disabling this can remove player-owned mobs.
+    exclude-tamed: true
+    # Protect leashed mobs; disabling this can break player setups.
+    exclude-leashed: true
+    # Protect mobs carrying passengers or riding another entity.
+    exclude-passengers: true
+    # Protect hostile mobs this close to any player, in blocks. 0 disables this protection.
+    protect-player-radius: 32
+
+plugins:
+  metrics:
+    # Collect plugin event-handler and scheduler-task execution timings.
+    enabled: true
+    # Report interval. Aggregation, sorting, and logging run on SalmonMC Thread.
+    report-interval-seconds: 60
+    # Maximum number of plugins included in each report.
+    max-plugins-in-report: 10
+    # Hide plugins below this total execution time per report window, in milliseconds.
+    minimum-report-ms: 1
+    # Measure registered synchronous and asynchronous plugin event handlers.
+    track-event-handlers: true
+    # Measure Bukkit scheduled plugin tasks.
+    track-scheduler-tasks: true
+    # Warn when an individual measured call takes this long; 0 disables warnings.
+    slow-call-warning-ms: 50

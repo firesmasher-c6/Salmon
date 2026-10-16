@@ -1,0 +1,47 @@
+# ============================================================================
+# Salmon Main Configuration
+#
+# This is the top-level switch for Salmon features. Fine-grained optimization
+# settings are configured separately in config/salmon-opts.yml, with reference
+# values documented in config/salmon-defaults.yml.
+#
+# Salmon's optional startup scripts are stored in salmon-scripts/ and use the
+# .slms file extension. Scripts run once during startup when Salmon is enabled.
+# Only add scripts from authors you trust: their "run command" instructions
+# execute as the server console and can change server settings, worlds, and
+# player state.
+#
+# When Salmon is enabled, its background worker is named "SalmonMC Thread".
+# Background-safe work (such as script discovery and plugin-metric reporting)
+# runs there. Game and world changes are scheduled on the Minecraft server
+# thread; Salmon does not mutate worlds from its background worker.
+#
+# This file is read during startup. Back it up before editing, use spaces for
+# indentation, and restart the server after changing its values. Invalid YAML
+# prevents Salmon configuration from loading and is reported in the server log.
+#
+# Website: https://codestuff.pages.dev (Deprecated)
+# GitHub: https://github.com/firesmasher-c6
+# Guns.lol: https://guns.lol/firesmasher
+# YouTube: https://youtube.com/@FireSmasher
+# TikTok: https://www.tiktok.com/@FireSmasher_C6
+# TalonAI: https://talonai.wisp.uno
+#
+# Credits:
+#   Lead Architect: FireSmasher
+#   Lead Developer: FireSmasher
+#   Lead Programmer: GitHub Copilot
+#   Publisher: FireSmasher
+#   License: GPLv3
+# ============================================================================
+
+salmon:
+  # Master switch for Salmon's background worker, plugin diagnostics,
+  # configured entity optimizations, and startup .slms scripts.
+  #
+  # true:  initialize Salmon and enable the individual options in
+  #        config/salmon-opts.yml. Features with their own enabled flag still
+  #        follow that setting.
+  # false: disable Salmon-specific optimization behavior and skip startup
+  #        scripts. Paper's normal server and plugin behavior is unchanged.
+  enabled: true
