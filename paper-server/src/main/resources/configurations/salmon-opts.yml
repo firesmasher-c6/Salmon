@@ -8,6 +8,8 @@
 # Salmon separates optimizations into three groups:
 #   chunks: limits entities allowed to spawn in an individual chunk.
 #   entities.cleanup: optionally removes old persistent hostile mobs.
+#   plugins.chunky-pregeneration: installs Chunky from Modrinth before Paper loads plugins.
+#   plugins.modrinth: provides safe plugin search and installation commands.
 #   plugins.metrics: measures plugin event handlers and scheduled task time.
 #
 # Chunk caps are enabled by default with limits for TNT and hostile, passive,
@@ -26,6 +28,11 @@
 #   - Setting entities.cleanup.enabled to true permanently removes eligible
 #     mobs. Back up worlds before enabling cleanup or widening its entity list.
 #   - "run command" scripts have console authority; plugin metrics do not.
+#   - Modrinth installs plugin code with the permissions of the server process.
+#     Review projects before installing; new plugins load after a restart.
+#   - Chunky auto-install contacts Modrinth before plugin initialization and
+#     requires Internet access. Disable plugins.chunky-pregeneration.enabled
+#     to opt out.
 #   - Use spaces for indentation. Do not use tabs or change the YAML structure.
 #   - Restart the server after changing any value. Changes are not hot-reloaded.
 #   - Invalid YAML or invalid numeric values stop startup with an error.
@@ -129,6 +136,17 @@ entities:
     protect-player-radius: 32
 
 plugins:
+  chunky-pregeneration:
+    # Downloads the latest Paper-compatible Chunky release for this Minecraft
+    # version before Paper discovers plugins. Paper loads the resulting JAR.
+    # This requires Internet access at every startup until Chunky is installed.
+    enabled: true
+
+  modrinth:
+    # Enables /salmon modrinth search and /salmon modrinth install.
+    # Installs are saved in the plugins directory and require a restart.
+    enabled: true
+
   metrics:
     # Collect timing statistics for plugin event handlers and Bukkit scheduler
     # tasks. Salmon reports measurements; it never disables or restarts plugins.

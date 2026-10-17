@@ -71,7 +71,7 @@ public interface ServerBuildInfo {
     String minecraftVersionName();
 
     /**
-     * Gets the build number.
+     * Gets the numeric build number, when provided by the build.
      *
      * @return the build number
      */
@@ -111,11 +111,12 @@ public interface ServerBuildInfo {
      */
     enum StringRepresentation {
         /**
-         * A simple version string, in format {@code <minecraftVersionId>-<buildNumber>-<gitCommit>}.
+         * A simple version string, in format {@code <minecraftVersionId>-<Salmon build label>} when present,
+         * otherwise {@code <minecraftVersionId>-<buildNumber>-<gitCommit>}.
          */
         VERSION_SIMPLE,
         /**
-         * A simple version string, in format {@code <minecraftVersionId>-<buildNumber>-<gitBranch>@<gitCommit> (<buildTime>)}.
+         * A full version string including the build label or number, git branch/commit, and build time.
          */
         VERSION_FULL,
     }

@@ -26,6 +26,8 @@ class SalmonConfigurationTest {
         assertEquals(16, configuration.options().maxAmbientEntitiesPerChunk());
         assertFalse(configuration.options().cleanupEnabled());
         assertTrue(configuration.options().pluginMetricsEnabled());
+        assertTrue(configuration.options().chunkyPregenerationEnabled());
+        assertTrue(configuration.options().modrinthServicesEnabled());
         assertEquals(
             java.util.Set.of("minecraft:zombie"),
             configuration.options().cleanupEntityTypes()
@@ -44,6 +46,10 @@ class SalmonConfigurationTest {
               max-primed-tnt-per-chunk: 24
               max-passive-entities-per-chunk: 80
             plugins:
+              chunky-pregeneration:
+                enabled: false
+              modrinth:
+                enabled: false
               metrics:
                 report-interval-seconds: 90
             """);
@@ -54,6 +60,8 @@ class SalmonConfigurationTest {
         assertEquals(24, configuration.options().maxPrimedTntPerChunk());
         assertEquals(80, configuration.options().maxPassiveEntitiesPerChunk());
         assertEquals(90, configuration.options().pluginReportIntervalSeconds());
+        assertFalse(configuration.options().chunkyPregenerationEnabled());
+        assertFalse(configuration.options().modrinthServicesEnabled());
         assertFalse(configuration.options().cleanupEnabled());
     }
 

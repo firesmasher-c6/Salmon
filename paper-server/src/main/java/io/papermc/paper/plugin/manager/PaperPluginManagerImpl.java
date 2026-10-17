@@ -95,10 +95,20 @@ public class PaperPluginManagerImpl implements PluginManager, DependencyContext 
     @Override
     public void disablePlugins() {
         this.instanceManager.disablePlugins();
+        if (dev.firesmasher.salmon.plugins.api.SalmonAPI.isAvailable()) {
+            for (Plugin plugin : this.getPlugins()) {
+                dev.firesmasher.salmon.plugins.api.SalmonAPI.get().unregisterScriptFunctions(plugin);
+            }
+        }
     }
 
     @Override
     public synchronized void clearPlugins() {
+        if (dev.firesmasher.salmon.plugins.api.SalmonAPI.isAvailable()) {
+            for (Plugin plugin : this.getPlugins()) {
+                dev.firesmasher.salmon.plugins.api.SalmonAPI.get().unregisterScriptFunctions(plugin);
+            }
+        }
         this.instanceManager.clearPlugins();
         this.permissionManager.clearPermissions();
         this.paperEventManager.clearEvents();
@@ -111,7 +121,13 @@ public class PaperPluginManagerImpl implements PluginManager, DependencyContext 
 
     @Override
     public void disablePlugin(@NotNull Plugin plugin) {
-        this.instanceManager.disablePlugin(plugin);
+        try {
+            this.instanceManager.disablePlugin(plugin);
+        } finally {
+            if (dev.firesmasher.salmon.plugins.api.SalmonAPI.isAvailable()) {
+                dev.firesmasher.salmon.plugins.api.SalmonAPI.get().unregisterScriptFunctions(plugin);
+            }
+        }
     }
 
     @Override

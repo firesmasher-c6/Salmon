@@ -29,6 +29,14 @@ configuration, optimization controls, diagnostics, and startup scripts.
   distance, and entity-protection controls. It is disabled by default.
 - **Plugin execution metrics** for event handlers and Bukkit scheduled tasks.
   Salmon reports slow calls; it does not kill, restart, or rewrite plugins.
+- **Chunky pregeneration setup** can download a compatible Chunky plugin from
+  Modrinth before Paper discovers plugins. Paper loads the plugin normally;
+  Salmon does not run pregeneration itself.
+- **Modrinth plugin services** search and install Paper/Spigot plugin projects,
+  verify downloaded JAR checksums, and install required plugin dependencies.
+  Installed plugins require a server restart.
+- **SalmonAPI** adds an API under `dev.firesmasher.salmon.plugins.api` so
+  plugins can register synchronous functions callable from `.slms` scripts.
 - **A dedicated `SalmonMC Thread`** for background-safe work such as script
   discovery and metric aggregation. World changes and commands are handed to
   the Minecraft server thread.
@@ -56,11 +64,12 @@ in `paper-server/build/libs/`.
 4. Start the server again and tune Salmon in `salmon.yml` and
    `config/salmon-opts.yml`.
 
-Name the runnable server bundle `salmon-1.21.11-1e.jar` (`1e` means
-**First Build, Experimental**) and start it from your server directory:
+Salmon's current version is **Minecraft `1.21.11`, build `2e-001`**. Rename the
+runnable server bundle to `salmon-1.21.11-2e-001.jar` and start it from your
+server directory:
 
 ```sh
-java -Xms1G -Xmx4G -jar salmon-1.21.11-1e.jar --nogui
+java -Xms1G -Xmx4G -jar salmon-1.21.11-2e-001.jar --nogui
 ```
 
 Keep the server JAR, world, and configuration files in the same server
@@ -98,10 +107,68 @@ Run these as an operator (or grant the `salmon.command` permission):
 /salmon
 /salmon status
 /salmon scripts reload
+/salmon modrinth search <query>
+/salmon modrinth install <slug>
 ```
 
 `/salmon scripts reload` reads and runs scripts again. Commands in scripts run
 as the console, so reloading may repeat commands with lasting effects.
+Modrinth searches and downloads run on dedicated Salmon worker threads, not the
+Minecraft tick thread. Plugin JARs are validated and installed in the server's
+plugins directory; restart to load them. Installing third-party code carries
+the same trust risks as manually adding a plugin.
+
+Chunky auto-install can be disabled with
+`plugins.chunky-pregeneration.enabled: false` in `config/salmon-opts.yml`.
+Modrinth commands can be disabled with `plugins.modrinth.enabled: false`.
+Chunky preparation runs its network and file operations on a dedicated worker
+before Paper's plugin discovery; startup waits for completion so Paper does not
+race an unfinished plugin download.
+
+### SalmonAPI
+
+Plugins can compile against Salmon's Paper API and use
+`dev.firesmasher.salmon.plugins.api.SalmonAPI` to add functions to `.slms`
+scripts, run blocking work away from ticks, and return to the server thread
+before changing game state:
+
+```java
+import dev.firesmasher.salmon.plugins.api.SalmonAPI;
+
+SalmonAPI api = SalmonAPI.get();
+api.registerScriptFunction(this, "serverLabel", (context, arguments) -> "My server");
+api.supplyAsync(this, () -> loadLargeIndex())
+    .thenAccept(index -> api.runOnServerThread(this, server -> applyIndex(index)));
+```
+
+A script can then call `serverLabel()` in an expression. The API exposes the
+standard Bukkit/Paper `Server` for normal in-game automation, while its
+background helper is for CPU and I/O work that must not run during ticks.
+It also provides server-thread scheduling, delayed/repeating tasks, loaded
+plugin lookups, and console command dispatch. Script extension functions
+execute on the server thread and may return a number, string, boolean, or
+`null`; keep them short. Salmon unregisters a plugin's functions when that
+plugin is disabled. SalmonAPI is Salmon-specific and is not present on
+unmodified Paper servers.
+
+### Salmon plugin descriptor
+
+Paper plugins can opt into Salmon-specific APIs and the Salmon category in
+`/plugins` by using `salmon-plugin.yml` in the JAR root. Its configuration
+uses the same schema, loader, dependency declarations, bootstrapper, and
+classloading behavior as `paper-plugin.yml`:
+
+```yaml
+name: ExampleSalmonPlugin
+version: 1.0.0
+main: example.plugin.ExamplePlugin
+api-version: '1.21'
+```
+
+`salmon-plugin.yml` is optional. Existing `paper-plugin.yml` and `plugin.yml`
+plugins retain their Paper and Bukkit categories and loading behavior. If a
+JAR contains multiple descriptors, Salmon's descriptor takes precedence and
+the plugin is listed under **Salmon Plugins**.
 
 ### Salmon scripts
 
@@ -149,12 +216,11 @@ release filename before distributing or running it:
 
 ```sh
 mv paper-server/build/libs/paper-bundler-1.21.11-R0.1-SNAPSHOT-mojmap.jar \
-  paper-server/build/libs/salmon-1.21.11-1e.jar
+  paper-server/build/libs/salmon-1.21.11-2e-001.jar
 ```
 
-Here, `1e` identifies the **first experimental build** for Minecraft 1.21.11.
-For subsequent builds, increment the build number/suffix you choose and keep
-the filename consistent in your release notes and server launch command.
+The release identity is **Minecraft `1.21.11`, build `2e-001`**. Keep the
+filename consistent in your release notes and server launch command.
 The plain `Salmon-*.jar` output is not the bundled server distribution; rename
 and use the `paper-bundler-*-mojmap.jar` artifact. Building the project does
 not start the server.

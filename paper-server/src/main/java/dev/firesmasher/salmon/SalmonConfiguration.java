@@ -38,7 +38,9 @@ public record SalmonConfiguration(boolean enabled, Options options) {
         long pluginMinimumReportMillis,
         boolean pluginTrackEventHandlers,
         boolean pluginTrackSchedulerTasks,
-        long pluginSlowCallWarningMillis
+        long pluginSlowCallWarningMillis,
+        boolean chunkyPregenerationEnabled,
+        boolean modrinthServicesEnabled
     ) {
     }
 
@@ -87,7 +89,9 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             nonNegativeLong(options, "plugins.metrics.minimum-report-ms"),
             options.getBoolean("plugins.metrics.track-event-handlers"),
             options.getBoolean("plugins.metrics.track-scheduler-tasks"),
-            nonNegativeLong(options, "plugins.metrics.slow-call-warning-ms")
+            nonNegativeLong(options, "plugins.metrics.slow-call-warning-ms"),
+            options.getBoolean("plugins.chunky-pregeneration.enabled"),
+            options.getBoolean("plugins.modrinth.enabled")
         );
         return new SalmonConfiguration(main.getBoolean("salmon.enabled", true), parsedOptions);
     }

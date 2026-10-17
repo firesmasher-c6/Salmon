@@ -6,6 +6,11 @@ the server has loaded its worlds and startup listeners. They run in filename
 order. Scripts are parsed on SalmonMC Thread; game changes and commands run
 on the Minecraft server thread.
 
+The language supports variables, expressions, functions, if/elseif/else,
+while and numeric for loops, break/continue, print, console commands, block
+changes, and waits. See SALMON-SCRIPTS.md in the Salmon repository for the
+full syntax and safety guide.
+
 Only .slms files are read. Each script must start with this required metadata
 block. Missing or invalid metadata rejects the script; Salmon logs the error
 and never edits the script file.

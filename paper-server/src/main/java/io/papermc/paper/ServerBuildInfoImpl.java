@@ -19,6 +19,7 @@ public record ServerBuildInfoImpl(
     String minecraftVersionId,
     String minecraftVersionName,
     OptionalInt buildNumber,
+    String salmonBuild,
     Instant buildTime,
     Optional<String> gitBranch,
     Optional<String> gitCommit
@@ -27,6 +28,7 @@ public record ServerBuildInfoImpl(
     private static final String ATTRIBUTE_BRAND_NAME = "Brand-Name";
     private static final String ATTRIBUTE_BUILD_TIME = "Build-Time";
     private static final String ATTRIBUTE_BUILD_NUMBER = "Build-Number";
+    private static final String ATTRIBUTE_SALMON_BUILD = "Salmon-Build";
     private static final String ATTRIBUTE_GIT_BRANCH = "Git-Branch";
     private static final String ATTRIBUTE_GIT_COMMIT = "Git-Commit";
 
@@ -51,6 +53,7 @@ public record ServerBuildInfoImpl(
                 .map(Integer::parseInt)
                 .map(OptionalInt::of)
                 .orElse(OptionalInt.empty()),
+            getManifestAttribute(manifest, ATTRIBUTE_SALMON_BUILD).orElse(""),
             getManifestAttribute(manifest, ATTRIBUTE_BUILD_TIME)
                 .map(Instant::parse)
                 .orElse(Main.BOOT_TIME),
@@ -69,7 +72,9 @@ public record ServerBuildInfoImpl(
         final StringBuilder sb = new StringBuilder();
         sb.append(this.minecraftVersionId);
         sb.append('-');
-        if (this.buildNumber.isPresent()) {
+        if (!this.salmonBuild.isBlank()) {
+            sb.append(this.salmonBuild);
+        } else if (this.buildNumber.isPresent()) {
             sb.append(this.buildNumber.getAsInt());
         } else {
             sb.append(BUILD_DEV);

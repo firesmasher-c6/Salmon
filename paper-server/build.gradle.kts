@@ -192,15 +192,17 @@ tasks.jar {
         val git = Git(rootProject.layout.projectDirectory.path)
         val mcVersion = rootProject.providers.gradleProperty("mcVersion").get()
         val build = System.getenv("BUILD_NUMBER") ?: null
+        val salmonBuild = System.getenv("SALMON_BUILD") ?: "2e-001"
         val buildTime = providers.environmentVariable("BUILD_STARTED_AT").map(Instant::parse).orElse(Instant.EPOCH).get()
         val gitHash = git.exec(providers, "rev-parse", "--short=7", "HEAD").get().trim()
-        val implementationVersion = "$mcVersion-${build ?: "DEV"}-$gitHash"
+        val implementationVersion = "$mcVersion-$salmonBuild"
         val date = git.exec(providers, "show", "-s", "--format=%ci", gitHash).get().trim()
         val gitBranch = git.exec(providers, "rev-parse", "--abbrev-ref", "HEAD").get().trim()
         attributes(
             "Main-Class" to "org.bukkit.craftbukkit.Main",
             "Implementation-Title" to "Salmon",
             "Implementation-Version" to implementationVersion,
+            "Salmon-Build" to salmonBuild,
             "Implementation-Vendor" to date,
             "Specification-Title" to "Salmon",
             "Specification-Version" to project.version,

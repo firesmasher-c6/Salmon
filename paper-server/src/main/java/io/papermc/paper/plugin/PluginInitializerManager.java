@@ -107,6 +107,7 @@ public class PluginInitializerManager {
         LOGGER.info("Initializing plugins...");
         // We have to load the bukkit configuration inorder to get the update folder location.
         io.papermc.paper.plugin.PluginInitializerManager pluginSystem = io.papermc.paper.plugin.PluginInitializerManager.init(optionSet);
+        prepareSalmonChunky(pluginSystem.pluginDirectoryPath());
         if (pluginSystem.pluginRemapper != null) pluginSystem.pluginRemapper.loadingPlugins();
 
         // Register the default plugin directory
@@ -123,17 +124,22 @@ public class PluginInitializerManager {
 
         final Set<String> paperPluginNames = new TreeSet<>();
         final Set<String> legacyPluginNames = new TreeSet<>();
+        final Set<String> salmonPluginNames = new TreeSet<>();
         LaunchEntryPointHandler.INSTANCE.getStorage().forEach((entrypoint, providerStorage) -> {
             providerStorage.getRegisteredProviders().forEach(provider -> {
                 if (provider instanceof final SpigotPluginProvider legacy) {
                     legacyPluginNames.add(String.format("%s (%s)", legacy.getMeta().getName(), legacy.getMeta().getVersion()));
                 } else if (provider instanceof final PaperPluginParent.PaperServerPluginProvider paper) {
-                    paperPluginNames.add(String.format("%s (%s)", provider.getMeta().getName(), provider.getMeta().getVersion()));
+                    final Set<String> names = paper.getParent().isSalmonPlugin() ? salmonPluginNames : paperPluginNames;
+                    names.add(String.format("%s (%s)", provider.getMeta().getName(), provider.getMeta().getVersion()));
                 }
             });
         });
-        final int total = paperPluginNames.size() + legacyPluginNames.size();
+        final int total = paperPluginNames.size() + legacyPluginNames.size() + salmonPluginNames.size();
         LOGGER.info("Initialized {} plugin{}", total, total == 1 ? "" : "s");
+        if (!salmonPluginNames.isEmpty()) {
+            LOGGER.info("Salmon plugins ({}): {}", salmonPluginNames.size(), String.join(", ", salmonPluginNames));
+        }
         if (!paperPluginNames.isEmpty()) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.info("Paper plugins ({}):\n - {}", paperPluginNames.size(), String.join("\n - ", paperPluginNames));
@@ -147,6 +153,55 @@ public class PluginInitializerManager {
             } else {
                 LOGGER.info("Bukkit plugins ({}):\n - {}", legacyPluginNames.size(), String.join(", ", legacyPluginNames));
             }
+        }
+    }
+
+    private static void prepareSalmonChunky(final Path pluginDirectory) {
+        final java.util.concurrent.FutureTask<Void> preparation = new java.util.concurrent.FutureTask<>(() -> {
+            prepareSalmonChunkyOffThread(pluginDirectory);
+            return null;
+        });
+        final Thread worker = new Thread(preparation, "Salmon Chunky Bootstrap");
+        worker.setDaemon(true);
+        worker.start();
+        boolean interrupted = false;
+        try {
+            while (true) {
+                try {
+                    preparation.get();
+                    return;
+                } catch (final InterruptedException exception) {
+                    interrupted = true;
+                    LOGGER.warn("Waiting for off-thread Chunky preparation to finish before plugin discovery.", exception);
+                } catch (final java.util.concurrent.ExecutionException exception) {
+                    LOGGER.warn("Could not prepare Chunky from Modrinth; continuing plugin initialization.", exception.getCause());
+                    return;
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private static void prepareSalmonChunkyOffThread(final Path pluginDirectory) throws Exception {
+        try {
+            final dev.firesmasher.salmon.SalmonConfiguration configuration =
+                dev.firesmasher.salmon.SalmonConfiguration.load(Path.of(".").toAbsolutePath().normalize());
+            final dev.firesmasher.salmon.SalmonConfiguration.Options options = configuration.options();
+            if (!configuration.enabled() || !options.chunkyPregenerationEnabled()) {
+                return;
+            }
+            if (!options.modrinthServicesEnabled()) {
+                LOGGER.warn("Chunky auto-install is enabled, but Modrinth services are disabled; skipping download.");
+                return;
+            }
+            new dev.firesmasher.salmon.ModrinthService(pluginDirectory,
+                net.minecraft.SharedConstants.getCurrentVersion().name()).installChunky();
+        } catch (final java.io.IOException | org.bukkit.configuration.InvalidConfigurationException
+            | IllegalArgumentException exception) {
+            LOGGER.warn("Could not prepare Chunky from Modrinth; continuing plugin initialization.", exception);
         }
     }
 

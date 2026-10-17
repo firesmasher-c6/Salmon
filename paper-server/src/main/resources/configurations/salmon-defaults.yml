@@ -70,6 +70,12 @@ entities:
     protect-player-radius: 32
 
 plugins:
+  chunky-pregeneration:
+    # Downloads a compatible Chunky Paper plugin before plugin discovery so Paper can load it.
+    enabled: true
+  modrinth:
+    # Enables operator/console Modrinth plugin search and installation with required dependencies.
+    enabled: true
   metrics:
     # Collect plugin event-handler and scheduler-task execution timings.
     enabled: true

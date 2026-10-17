@@ -172,6 +172,7 @@ public class PaperPluginsCommand {
 
     private int execute(CommandContext<CommandSourceStack> context) {
         final CommandSender sender = context.getSource().getSender();
+        final TreeMap<String, PluginProvider<JavaPlugin>> salmonPlugins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         final TreeMap<String, PluginProvider<JavaPlugin>> paperPlugins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         final TreeMap<String, PluginProvider<JavaPlugin>> spigotPlugins = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -181,21 +182,37 @@ public class PaperPluginsCommand {
             if (provider instanceof SpigotPluginProvider) {
                 spigotPlugins.put(configuration.getDisplayName(), provider);
             } else if (provider instanceof PaperPluginParent.PaperServerPluginProvider) {
-                paperPlugins.put(configuration.getDisplayName(), provider);
+                final PaperPluginParent parent = ((PaperPluginParent.PaperServerPluginProvider) provider).getParent();
+                if (parent.isSalmonPlugin()) {
+                    salmonPlugins.put(configuration.getDisplayName(), provider);
+                } else {
+                    paperPlugins.put(configuration.getDisplayName(), provider);
+                }
             }
         }
 
+        final int sizeSalmonPlugins = salmonPlugins.size();
         final int sizePaperPlugins = paperPlugins.size();
         final int sizeSpigotPlugins = spigotPlugins.size();
-        final int sizePlugins = sizePaperPlugins + sizeSpigotPlugins;
-        final boolean hasAllPluginTypes = (sizePaperPlugins > 0 && sizeSpigotPlugins > 0);
+        final int sizePlugins = sizeSalmonPlugins + sizePaperPlugins + sizeSpigotPlugins;
+        final int categoryCount = (sizeSalmonPlugins > 0 ? 1 : 0) + (sizePaperPlugins > 0 ? 1 : 0)
+            + (sizeSpigotPlugins > 0 ? 1 : 0);
+        final boolean showCategoryCounts = categoryCount > 1;
 
         final Component infoMessage = Component.text().append(INFO_ICON_SERVER_PLUGIN).append(Component.text("Server Plugins (%s):".formatted(sizePlugins), NamedTextColor.WHITE)).build();
 
         sender.sendMessage(infoMessage);
 
+        if (!salmonPlugins.isEmpty()) {
+            sender.sendMessage(header("Salmon Plugins", 0xFA8072, sizeSalmonPlugins, showCategoryCounts));
+        }
+
+        for (final Component component : formatProviders(salmonPlugins)) {
+            sender.sendMessage(component);
+        }
+
         if (!paperPlugins.isEmpty()) {
-            sender.sendMessage(header("Paper Plugins", 0x0288D1, sizePaperPlugins, hasAllPluginTypes));
+            sender.sendMessage(header("Paper Plugins", 0x0288D1, sizePaperPlugins, showCategoryCounts));
         }
 
         for (final Component component : formatProviders(paperPlugins)) {
@@ -203,7 +220,7 @@ public class PaperPluginsCommand {
         }
 
         if (!spigotPlugins.isEmpty()) {
-            sender.sendMessage(header("Bukkit Plugins", 0xED8106, sizeSpigotPlugins, hasAllPluginTypes));
+            sender.sendMessage(header("Bukkit Plugins", 0xED8106, sizeSpigotPlugins, showCategoryCounts));
         }
 
         for (final Component component : formatProviders(spigotPlugins)) {

@@ -27,20 +27,32 @@ import java.util.jar.JarFile;
 public class PaperPluginParent {
 
     public static final PluginTypeFactory<PaperPluginParent, PaperPluginMeta> FACTORY = new PaperPluginProviderFactory();
+    public static final PluginTypeFactory<PaperPluginParent, PaperPluginMeta> SALMON_FACTORY = new PaperPluginProviderFactory(true);
     private final Path path;
     private final JarFile jarFile;
     private final PaperPluginMeta description;
     private final PaperPluginClassLoader classLoader;
     private final PluginProviderContext context;
     private final ComponentLogger logger;
+    private final boolean salmonPlugin;
 
     public PaperPluginParent(Path path, JarFile jarFile, PaperPluginMeta description, PaperPluginClassLoader classLoader, PluginProviderContext context) {
+        this(path, jarFile, description, classLoader, context, false);
+    }
+
+    public PaperPluginParent(Path path, JarFile jarFile, PaperPluginMeta description, PaperPluginClassLoader classLoader,
+        PluginProviderContext context, boolean salmonPlugin) {
         this.path = path;
         this.jarFile = jarFile;
         this.description = description;
         this.classLoader = classLoader;
         this.context = context;
         this.logger = context.getLogger();
+        this.salmonPlugin = salmonPlugin;
+    }
+
+    public boolean isSalmonPlugin() {
+        return this.salmonPlugin;
     }
 
     public boolean shouldCreateBootstrap() {
@@ -229,6 +241,10 @@ public class PaperPluginParent {
             }
 
             return this.bootstrapProvider.getLastProvidedStatus() == ProviderStatus.ERRORED;
+        }
+
+        public PaperPluginParent getParent() {
+            return PaperPluginParent.this;
         }
 
         /*

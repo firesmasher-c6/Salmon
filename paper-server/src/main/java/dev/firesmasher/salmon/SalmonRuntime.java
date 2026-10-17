@@ -11,10 +11,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.nio.file.Path;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
@@ -37,23 +42,40 @@ public final class SalmonRuntime implements AutoCloseable {
     private final CraftServer server;
     private final SalmonConfiguration configuration;
     private final ScheduledExecutorService executor;
+    private final ExecutorService modrinthExecutor;
+    private final ExecutorService apiExecutor;
     private final SalmonScriptManager scriptManager;
+    private final ModrinthService modrinthService;
     private final Map<String, Long> lastSlowWarningNanos = new HashMap<>();
 
-    private SalmonRuntime(final CraftServer server, final SalmonConfiguration configuration, final Path serverDirectory) throws IOException {
+    private SalmonRuntime(final CraftServer server, final SalmonConfiguration configuration, final Path serverDirectory,
+        final Path pluginDirectory) throws IOException {
         this.server = server;
         this.configuration = configuration;
         this.scriptManager = new SalmonScriptManager(server, serverDirectory);
+        this.modrinthService = new ModrinthService(pluginDirectory, net.minecraft.SharedConstants.getCurrentVersion().name());
         this.executor = Executors.newSingleThreadScheduledExecutor(task -> {
             final Thread thread = new Thread(task, "SalmonMC Thread");
             thread.setDaemon(true);
             return thread;
         });
+        this.modrinthExecutor = Executors.newFixedThreadPool(2, task -> {
+            final Thread thread = new Thread(task, "Salmon Modrinth Thread");
+            thread.setDaemon(true);
+            return thread;
+        });
+        this.apiExecutor = Executors.newFixedThreadPool(2, task -> {
+            final Thread thread = new Thread(task, "Salmon API Worker");
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
-    public static SalmonRuntime start(final CraftServer server, final SalmonConfiguration configuration, final Path serverDirectory) throws IOException {
-        final SalmonRuntime runtime = new SalmonRuntime(server, configuration, serverDirectory);
+    public static SalmonRuntime start(final CraftServer server, final SalmonConfiguration configuration,
+        final Path serverDirectory, final Path pluginDirectory) throws IOException {
+        final SalmonRuntime runtime = new SalmonRuntime(server, configuration, serverDirectory, pluginDirectory);
         instance = runtime;
+        SalmonAPIImpl.install(runtime);
         final SalmonConfiguration.Options options = configuration.options();
         PluginExecutionMetrics.setEnabled(configuration.enabled() && options.pluginMetricsEnabled());
         eventTimingEnabled = configuration.enabled() && options.pluginMetricsEnabled() && options.pluginTrackEventHandlers();
@@ -180,6 +202,22 @@ public final class SalmonRuntime implements AutoCloseable {
         this.executor.execute(action);
     }
 
+    public void executeBackgroundAfter(final Runnable action, final long delay, final TimeUnit unit) {
+        this.executor.schedule(action, delay, unit);
+    }
+
+    <T> CompletableFuture<T> supplyApiAsync(final Supplier<T> task) {
+        return CompletableFuture.supplyAsync(task, this.apiExecutor);
+    }
+
+    void runApiOnServerThread(final Plugin owner, final Consumer<Server> task) {
+        this.server.getServer().execute(() -> {
+            if (owner.isEnabled()) {
+                task.accept(this.server);
+            }
+        });
+    }
+
     public void loadScriptsAtStartup() {
         this.scriptManager.loadAtStartup();
     }
@@ -190,6 +228,44 @@ public final class SalmonRuntime implements AutoCloseable {
         }
         this.scriptManager.loadAtStartup();
         return true;
+    }
+
+    public void searchModrinth(final String query, final java.util.function.Consumer<List<ModrinthService.Project>> success,
+        final java.util.function.Consumer<Exception> failure) {
+        if (!this.configuration.options().modrinthServicesEnabled()) {
+            failure.accept(new IllegalStateException("Modrinth services are disabled in config/salmon-opts.yml"));
+            return;
+        }
+        this.modrinthExecutor.execute(() -> {
+            try {
+                final List<ModrinthService.Project> projects = this.modrinthService.search(query);
+                this.server.getServer().execute(() -> success.accept(projects));
+            } catch (IOException | InterruptedException | RuntimeException ex) {
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+                this.server.getServer().execute(() -> failure.accept(ex));
+            }
+        });
+    }
+
+    public void installModrinth(final String slugOrId, final java.util.function.Consumer<ModrinthService.InstallResult> success,
+        final java.util.function.Consumer<Exception> failure) {
+        if (!this.configuration.options().modrinthServicesEnabled()) {
+            failure.accept(new IllegalStateException("Modrinth services are disabled in config/salmon-opts.yml"));
+            return;
+        }
+        this.modrinthExecutor.execute(() -> {
+            try {
+                final ModrinthService.InstallResult result = this.modrinthService.install(slugOrId);
+                this.server.getServer().execute(() -> success.accept(result));
+            } catch (IOException | InterruptedException | RuntimeException ex) {
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+                this.server.getServer().execute(() -> failure.accept(ex));
+            }
+        });
     }
 
     public static void recordPluginEvent(final Plugin plugin, final long elapsedNanos) {
@@ -368,6 +444,8 @@ public final class SalmonRuntime implements AutoCloseable {
         taskTimingEnabled = false;
         PluginExecutionMetrics.setEnabled(false);
         this.executor.shutdown();
+        this.modrinthExecutor.shutdown();
+        this.apiExecutor.shutdown();
         instance = null;
     }
 

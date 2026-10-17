@@ -23,6 +23,7 @@ import java.util.jar.JarFile;
 public abstract class PluginFileType<T, C extends PluginMeta> {
 
     public static final String PAPER_PLUGIN_YML = "paper-plugin.yml";
+    public static final String SALMON_PLUGIN_YML = "salmon-plugin.yml";
     private static final List<String> CONFIG_TYPES = new ArrayList<>();
 
     public static final PluginFileType<PaperPluginParent, PaperPluginMeta> PAPER = new PluginFileType<>(PAPER_PLUGIN_YML, PaperPluginParent.FACTORY) {
@@ -37,6 +38,19 @@ public abstract class PluginFileType<T, C extends PluginMeta> {
             entrypointHandler.register(Entrypoint.PLUGIN, parent.createPluginProvider(bootstrapPluginProvider));
         }
     };
+    public static final PluginFileType<PaperPluginParent, PaperPluginMeta> SALMON =
+        new PluginFileType<>(SALMON_PLUGIN_YML, PaperPluginParent.SALMON_FACTORY) {
+            @Override
+            protected void register(EntrypointHandler entrypointHandler, PaperPluginParent parent) {
+                PaperPluginParent.PaperBootstrapProvider bootstrapPluginProvider = null;
+                if (parent.shouldCreateBootstrap()) {
+                    bootstrapPluginProvider = parent.createBootstrapProvider();
+                    entrypointHandler.register(Entrypoint.BOOTSTRAPPER, bootstrapPluginProvider);
+                }
+
+                entrypointHandler.register(Entrypoint.PLUGIN, parent.createPluginProvider(bootstrapPluginProvider));
+            }
+        };
     public static final PluginFileType<SpigotPluginProvider, PluginDescriptionFile> SPIGOT = new PluginFileType<>("plugin.yml", SpigotPluginProvider.FACTORY) {
         @Override
         protected void register(EntrypointHandler entrypointHandler, SpigotPluginProvider provider) {
@@ -44,7 +58,7 @@ public abstract class PluginFileType<T, C extends PluginMeta> {
         }
     };
 
-    private static final List<PluginFileType<?, ?>> VALUES = List.of(PAPER, SPIGOT);
+    private static final List<PluginFileType<?, ?>> VALUES = List.of(SALMON, PAPER, SPIGOT);
 
     private final String config;
     private final PluginTypeFactory<T, C> factory;

@@ -491,7 +491,10 @@ public final class CraftServer implements Server {
         datapackManager = new io.papermc.paper.datapack.PaperDatapackManager(console.getPackRepository()); // Paper
         this.spark = new io.papermc.paper.SparksFly(this); // Paper - spark
         try {
-            this.salmonRuntime = SalmonRuntime.start(this, SalmonConfiguration.load(Path.of(".").toAbsolutePath().normalize()), Path.of(".").toAbsolutePath().normalize());
+            this.salmonRuntime = SalmonRuntime.start(this,
+                SalmonConfiguration.load(Path.of(".").toAbsolutePath().normalize()),
+                Path.of(".").toAbsolutePath().normalize(),
+                io.papermc.paper.plugin.PluginInitializerManager.instance().pluginDirectoryPath());
         } catch (IOException | org.bukkit.configuration.InvalidConfigurationException | IllegalArgumentException ex) {
             this.logger.log(Level.SEVERE, "Failed to load Salmon configuration; server startup cannot continue", ex);
             throw new IllegalStateException("Failed to load Salmon configuration", ex);
