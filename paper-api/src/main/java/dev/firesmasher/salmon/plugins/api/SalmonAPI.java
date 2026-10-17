@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
+import org.jetbrains.annotations.Nullable;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -121,6 +122,7 @@ public abstract class SalmonAPI {
      * @param name plugin name
      * @return plugin, or {@code null} when it is not loaded
      */
+    @Nullable
     public abstract Plugin plugin(String name);
 
     /**

@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.AtomicReference;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
 public final class PluginExecutionMetrics {
     private static final AtomicReference<ConcurrentHashMap<String, MutableSnapshot>> CURRENT = new AtomicReference<>(new ConcurrentHashMap<>());
@@ -23,15 +24,15 @@ public final class PluginExecutionMetrics {
         }
     }
 
-    public static void recordEvent(final Plugin plugin, final long elapsedNanos) {
+    public static void recordEvent(@Nullable final Plugin plugin, final long elapsedNanos) {
         record(plugin, elapsedNanos, true);
     }
 
-    public static void recordTask(final Plugin plugin, final long elapsedNanos) {
+    public static void recordTask(@Nullable final Plugin plugin, final long elapsedNanos) {
         record(plugin, elapsedNanos, false);
     }
 
-    private static void record(final Plugin plugin, final long elapsedNanos, final boolean event) {
+    private static void record(@Nullable final Plugin plugin, final long elapsedNanos, final boolean event) {
         if (!enabled || plugin == null) {
             return;
         }
