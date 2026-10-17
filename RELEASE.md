@@ -1,19 +1,20 @@
-# Salmon 1.21.11 - 6e-005
+# Salmon 1.21.11 - 7e-006
 
-Salmon `6e-005` fixes built-in command registration after plugin command
-lifecycles and server aliases are initialized. `/salmon` and `/smp` are
-available on startup and after reload, with tab completion for their
-subcommands.
+Salmon `7e-006` fixes `/smp` registration. The command was accidentally
+registered using `/salmon` as its explicit label, so it could never appear
+under `/smp`. Salmon commands now register using their own declared names.
+This build retains command lifecycle ordering and tab completion from `6e-005`.
 
 ## Download
 
-Download `salmon-1.21.11-6e-005.jar` from this GitHub release.
+Download `salmon-1.21.11-7e-006.jar` from this GitHub release.
 
 ## Highlights
 
-- Registers `/salmon` and `/smp` after plugin lifecycle commands and aliases,
-  then refreshes online players' command trees.
-- Adds tab completion for the supported `/salmon` and `/smp` subcommands.
+- Fixes `/smp` being registered under the wrong label.
+- Registers `/salmon` and `/smp` using their command names after plugin
+  lifecycle commands and aliases, then refreshes online players' command trees.
+- Retains tab completion for the supported `/salmon` and `/smp` subcommands.
 - `/salmon` exposes Salmon status, scripts, and Modrinth plugin services.
 - `/smp` manages MOTD reload and maintenance mode / allowlisting.
 - Redstone Optimization defaults to Paper's Alternate Current engine, which
@@ -32,13 +33,13 @@ Download `salmon-1.21.11-6e-005.jar` from this GitHub release.
 ## Install and start
 
 1. Install Java 21 or later.
-2. Put `salmon-1.21.11-6e-005.jar` in an empty server directory.
+2. Put `salmon-1.21.11-7e-006.jar` in an empty server directory.
 3. Start the server once to create its configuration files.
 4. Review `salmon.yml` and `config/salmon-opts.yml`, accept the Minecraft EULA
    in `eula.txt`, then restart.
 
    ```sh
-   java -Xms1G -Xmx4G -jar salmon-1.21.11-6e-005.jar --nogui
+   java -Xms1G -Xmx4G -jar salmon-1.21.11-7e-006.jar --nogui
    ```
 
 You can confirm command registration at the server console with `salmon` or

@@ -627,10 +627,10 @@ public final class CraftServer implements Server {
         if (this.pluginManager.getPermission("salmon.command") == null) {
             this.pluginManager.addPermission(new Permission("salmon.command", org.bukkit.permissions.PermissionDefault.OP));
         }
-        if (!this.commandMap.register("salmon", "Salmon", new SalmonCommand(this.salmonRuntime))) {
+        if (!this.commandMap.register("Salmon", new SalmonCommand(this.salmonRuntime))) {
             this.getLogger().severe("Could not register /salmon because another command already owns that label.");
         }
-        if (!this.commandMap.register("salmon", "Salmon", new SalmonSmpCommand(this.salmonRuntime))) {
+        if (!this.commandMap.register("Salmon", new SalmonSmpCommand(this.salmonRuntime))) {
             this.getLogger().severe("Could not register /smp because another command already owns that label.");
         }
     }
