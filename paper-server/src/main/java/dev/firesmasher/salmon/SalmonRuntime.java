@@ -96,7 +96,8 @@ public final class SalmonRuntime implements AutoCloseable {
                     + options.maxWaterEntitiesPerChunk() + " water, and "
                     + options.maxAmbientEntitiesPerChunk() + " ambient entities per chunk), persistent-mob cleanup "
                     + (options.cleanupEnabled() ? "enabled" : "disabled") + ", plugin metrics "
-                    + (options.pluginMetricsEnabled() ? "enabled" : "disabled"));
+                    + (options.pluginMetricsEnabled() ? "enabled" : "disabled") + ", redstone "
+                    + options.redstoneImplementation().name().toLowerCase(java.util.Locale.ROOT));
             });
         } else {
             LOGGER.warning("Salmon is disabled in salmon.yml; optimizer and scripts will not run");

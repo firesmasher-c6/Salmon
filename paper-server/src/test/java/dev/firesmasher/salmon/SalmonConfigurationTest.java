@@ -31,6 +31,8 @@ class SalmonConfigurationTest {
         assertTrue(configuration.options().pluginMetricsEnabled());
         assertTrue(configuration.options().chunkyPregenerationEnabled());
         assertTrue(configuration.options().modrinthServicesEnabled());
+        assertEquals(SalmonConfiguration.RedstoneImplementation.ALTERNATE_CURRENT,
+            configuration.options().redstoneImplementation());
         assertEquals(
             java.util.Set.of("minecraft:zombie"),
             configuration.options().cleanupEntityTypes()
@@ -76,6 +78,26 @@ class SalmonConfigurationTest {
               max-hostile-entities-per-chunk: -1
             """);
 
+        org.junit.jupiter.api.Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> SalmonConfiguration.load(this.serverDirectory)
+        );
+    }
+
+    @Test
+    void acceptsPaperAndVanillaRedstoneModesAndRejectsUnknownModes() throws Exception {
+        SalmonConfiguration.load(this.serverDirectory);
+        final Path optionsPath = this.serverDirectory.resolve("config/salmon-opts.yml");
+
+        Files.writeString(optionsPath, "redstone:\n  implementation: paper\n");
+        assertEquals(SalmonConfiguration.RedstoneImplementation.PAPER,
+            SalmonConfiguration.load(this.serverDirectory).options().redstoneImplementation());
+
+        Files.writeString(optionsPath, "redstone:\n  implementation: vanilla\n");
+        assertEquals(SalmonConfiguration.RedstoneImplementation.VANILLA,
+            SalmonConfiguration.load(this.serverDirectory).options().redstoneImplementation());
+
+        Files.writeString(optionsPath, "redstone:\n  implementation: not-a-redstone-engine\n");
         org.junit.jupiter.api.Assertions.assertThrows(
             IllegalArgumentException.class,
             () -> SalmonConfiguration.load(this.serverDirectory)

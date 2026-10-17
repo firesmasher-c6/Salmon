@@ -1,15 +1,21 @@
-# Salmon 1.21.11 - 3e-002
+# Salmon 1.21.11 - 4e-003
 
-Salmon `3e-002` is an experimental build for Minecraft `1.21.11`, based on
+Salmon `4e-003` is an experimental build for Minecraft `1.21.11`, based on
 Paper's plugin platform with additional Salmon optimizations, APIs, and SMP
 features.
 
 ## Download
 
-Download `salmon-1.21.11-3e-002.jar` from this GitHub release.
+Download `salmon-1.21.11-4e-003.jar` from this GitHub release.
 
 ## Highlights
 
+- Redstone Optimization defaults to Paper's Alternate Current engine, which
+  greatly speeds up redstone dust updates in large circuits. It changes dust
+  update order, so location-dependent or timing-sensitive contraptions may
+  behave differently. Configure `redstone.implementation` in
+  `config/salmon-opts.yml` to choose `alternate_current`, `eigencraft`,
+  `vanilla`, or `paper`.
 - MOTD Builder in `salmon.yml`; configured MOTDs override `server.properties`,
   support `&` color codes and `{online}` / `{max}` placeholders, and can be
   reloaded without restarting.
@@ -28,17 +34,17 @@ Download `salmon-1.21.11-3e-002.jar` from this GitHub release.
 ## Install and start
 
 1. Install Java 21 or later.
-2. Put `salmon-1.21.11-3e-002.jar` in an empty server directory.
+2. Put `salmon-1.21.11-4e-003.jar` in an empty server directory.
 3. Start the server once to create its configuration files.
-4. Review `salmon.yml`, accept the Minecraft EULA in `eula.txt`, then restart.
+4. Review `salmon.yml` and `config/salmon-opts.yml`, accept the Minecraft EULA
+   in `eula.txt`, then restart.
 
    ```sh
-   java -Xms1G -Xmx4G -jar salmon-1.21.11-3e-002.jar --nogui
+   java -Xms1G -Xmx4G -jar salmon-1.21.11-4e-003.jar --nogui
    ```
 
-Configure the standard and maintenance MOTD templates in `salmon.yml`.
-Maintenance mode is initially off and its separate allowlist starts empty.
-Before enabling it, add staff using `/smp maintenance whitelist add <uuid|playername>`.
+Before enabling maintenance mode, add staff using
+`/smp maintenance whitelist add <uuid|playername>`.
 
 Back up worlds before enabling entity cleanup or running scripts that change
 the world. Modrinth installations add third-party plugin code to the server;

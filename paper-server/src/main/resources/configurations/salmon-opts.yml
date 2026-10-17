@@ -11,6 +11,7 @@
 #   plugins.chunky-pregeneration: installs Chunky from Modrinth before Paper loads plugins.
 #   plugins.modrinth: provides safe plugin search and installation commands.
 #   plugins.metrics: measures plugin event handlers and scheduled task time.
+#   redstone: chooses Paper's redstone update implementation for every world.
 #
 # Chunk caps are enabled by default with limits for TNT and hostile, passive,
 # water, and ambient mobs. They reject new matching spawns in crowded chunks.
@@ -33,6 +34,9 @@
 #   - Chunky auto-install contacts Modrinth before plugin initialization and
 #     requires Internet access. Disable plugins.chunky-pregeneration.enabled
 #     to opt out.
+#   - redstone.implementation: alternate_current greatly speeds up redstone
+#     wire updates, but changes dust update order; location-dependent machines
+#     may behave differently. Use vanilla for vanilla update behavior.
 #   - Use spaces for indentation. Do not use tabs or change the YAML structure.
 #   - Restart the server after changing any value. Changes are not hot-reloaded.
 #   - Invalid YAML or invalid numeric values stop startup with an error.
@@ -175,3 +179,11 @@ plugins:
     # Log a slow-call warning when a measured operation takes at least this
     # many milliseconds. Set to 0 to disable slow-call warnings.
     slow-call-warning-ms: 50
+
+redstone:
+  # Redstone wire engine applied to all worlds on startup and Paper config
+  # reload. alternate_current is the fastest bundled engine, but its changed
+  # update order can affect location-dependent or timing-sensitive circuits.
+  # Choices: paper (respect Paper world settings), vanilla, eigencraft,
+  # alternate_current.
+  implementation: alternate_current

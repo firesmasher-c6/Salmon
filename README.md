@@ -46,6 +46,8 @@ configuration, optimization controls, diagnostics, and startup scripts.
 - **The `/salmon` command** for status and script reload operations.
 - **MOTD Builder and `/smp`** for configurable server-list messages and
   maintenance mode with a dedicated name/UUID allowlist.
+- **Redstone Optimization** using Paper's Alternate Current engine for much
+  faster redstone dust updates on large SMP circuits.
 
 Salmon does not promise that every third-party plugin is bug-free or compatible.
 Test plugin updates and configuration changes on a copy of your server before
@@ -66,12 +68,12 @@ in `paper-server/build/libs/`.
 4. Start the server again and tune Salmon in `salmon.yml` and
    `config/salmon-opts.yml`.
 
-Salmon's current version is **Minecraft `1.21.11`, build `3e-002`**. Rename the
-runnable server bundle to `salmon-1.21.11-3e-002.jar` and start it from your
+Salmon's current version is **Minecraft `1.21.11`, build `4e-003`**. Rename the
+runnable server bundle to `salmon-1.21.11-4e-003.jar` and start it from your
 server directory:
 
 ```sh
-java -Xms1G -Xmx4G -jar salmon-1.21.11-3e-002.jar --nogui
+java -Xms1G -Xmx4G -jar salmon-1.21.11-4e-003.jar --nogui
 ```
 
 Keep the server JAR, world, and configuration files in the same server
@@ -97,6 +99,10 @@ caps.
 
 Persistent-mob cleanup is off by default because it permanently removes
 entities. Plugin metrics are observational and do not control plugin lifecycle.
+Redstone uses Alternate Current by default for high-throughput dust updates.
+It changes dust update order, so location-dependent or timing-sensitive
+contraptions may behave differently. Select `vanilla` when vanilla update
+behavior is more important than maximum redstone throughput.
 Configuration changes require a server restart. Salmon copies templates only
 when a file is absent; it does not overwrite existing configuration files
 after an update.
@@ -126,6 +132,19 @@ Modrinth commands can be disabled with `plugins.modrinth.enabled: false`.
 Chunky preparation runs its network and file operations on a dedicated worker
 before Paper's plugin discovery; startup waits for completion so Paper does not
 race an unfinished plugin download.
+
+Redstone is configured with `redstone.implementation` in
+`config/salmon-opts.yml`:
+
+```yaml
+redstone:
+  implementation: alternate_current
+```
+
+Available modes are `alternate_current` (fastest bundled redstone dust engine),
+`eigencraft`, `vanilla`, and `paper` (respect each world's Paper configuration).
+Salmon applies the selected engine to all worlds at startup and when Paper
+configurations are reloaded.
 
 ### MOTD Builder and SMP maintenance
 
@@ -240,10 +259,10 @@ release filename before distributing or running it:
 
 ```sh
 mv paper-server/build/libs/paper-bundler-1.21.11-R0.1-SNAPSHOT-mojmap.jar \
-  paper-server/build/libs/salmon-1.21.11-3e-002.jar
+  paper-server/build/libs/salmon-1.21.11-4e-003.jar
 ```
 
-The release identity is **Minecraft `1.21.11`, build `3e-002`**. Keep the
+The release identity is **Minecraft `1.21.11`, build `4e-003`**. Keep the
 filename consistent in your release notes and server launch command.
 The plain `Salmon-*.jar` output is not the bundled server distribution; rename
 and use the `paper-bundler-*-mojmap.jar` artifact. Building the project does

@@ -14,6 +14,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public record SalmonConfiguration(boolean enabled, Options options) {
     private static final String RESOURCE_DIRECTORY = "configurations/";
 
+    public enum RedstoneImplementation {
+        PAPER,
+        VANILLA,
+        EIGENCRAFT,
+        ALTERNATE_CURRENT
+    }
+
     public record Options(
         boolean chunkCapsEnabled,
         int maxPrimedTntPerChunk,
@@ -40,7 +47,8 @@ public record SalmonConfiguration(boolean enabled, Options options) {
         boolean pluginTrackSchedulerTasks,
         long pluginSlowCallWarningMillis,
         boolean chunkyPregenerationEnabled,
-        boolean modrinthServicesEnabled
+        boolean modrinthServicesEnabled,
+        RedstoneImplementation redstoneImplementation
     ) {
     }
 
@@ -91,7 +99,8 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             options.getBoolean("plugins.metrics.track-scheduler-tasks"),
             nonNegativeLong(options, "plugins.metrics.slow-call-warning-ms"),
             options.getBoolean("plugins.chunky-pregeneration.enabled"),
-            options.getBoolean("plugins.modrinth.enabled")
+            options.getBoolean("plugins.modrinth.enabled"),
+            redstoneImplementation(options.getString("redstone.implementation", "alternate_current"))
         );
         return new SalmonConfiguration(main.getBoolean("salmon.enabled", true), parsedOptions);
     }
@@ -118,6 +127,18 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             throw new IllegalArgumentException("Salmon setting '" + path + "' must be zero or greater");
         }
         return value;
+    }
+
+    private static RedstoneImplementation redstoneImplementation(final String value) {
+        return switch (value.toLowerCase(Locale.ROOT).replace('-', '_')) {
+            case "paper" -> RedstoneImplementation.PAPER;
+            case "vanilla" -> RedstoneImplementation.VANILLA;
+            case "eigencraft" -> RedstoneImplementation.EIGENCRAFT;
+            case "alternate_current" -> RedstoneImplementation.ALTERNATE_CURRENT;
+            default -> throw new IllegalArgumentException(
+                "Salmon setting 'redstone.implementation' must be paper, vanilla, eigencraft, or alternate_current"
+            );
+        };
     }
 
     private static FileConfiguration loadFile(final Path path) throws IOException, InvalidConfigurationException {

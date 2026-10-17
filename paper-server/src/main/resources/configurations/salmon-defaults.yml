@@ -91,3 +91,10 @@ plugins:
     track-scheduler-tasks: true
     # Warn when an individual measured call takes this long; 0 disables warnings.
     slow-call-warning-ms: 50
+
+redstone:
+  # Select Paper's redstone engine for all worlds. Alternate Current is
+  # optimized for large dust networks, but changes update order. Choose
+  # vanilla when strict vanilla circuit update behavior is required.
+  # Choices: paper, vanilla, eigencraft, alternate_current.
+  implementation: alternate_current

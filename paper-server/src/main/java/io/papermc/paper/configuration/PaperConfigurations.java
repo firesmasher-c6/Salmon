@@ -3,6 +3,7 @@ package io.papermc.paper.configuration;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Table;
 import com.mojang.logging.LogUtils;
+import dev.firesmasher.salmon.SalmonConfiguration;
 import io.leangen.geantyref.TypeToken;
 import io.papermc.paper.configuration.legacy.RequiresSpigotInitialization;
 import io.papermc.paper.configuration.mapping.Definition;
@@ -94,6 +95,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
     static final String WORLD_CONFIG_FILE_NAME = "paper-world.yml";
     public static final String CONFIG_DIR = "config";
     private static final String BACKUP_DIR ="legacy-backup";
+    private SalmonConfiguration salmonConfiguration;
 
     private static final String GLOBAL_HEADER = String.format("""
             This is the global configuration file for Paper.
@@ -317,10 +319,36 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
     public WorldConfiguration createWorldConfig(final ContextMap contextMap) {
         final String levelName = contextMap.require(WORLD_NAME);
         try {
-            return super.createWorldConfig(contextMap);
+            final WorldConfiguration worldConfiguration = super.createWorldConfig(contextMap);
+            this.applySalmonRedstoneConfiguration(worldConfiguration);
+            return worldConfiguration;
         } catch (IOException exception) {
             throw new RuntimeException("Could not create world config for " + levelName, exception);
         }
+    }
+
+    private synchronized SalmonConfiguration salmonConfiguration() {
+        if (this.salmonConfiguration == null) {
+            try {
+                this.salmonConfiguration = SalmonConfiguration.load(Path.of(".").toAbsolutePath().normalize());
+            } catch (IOException | org.bukkit.configuration.InvalidConfigurationException | IllegalArgumentException exception) {
+                throw new IllegalStateException("Could not load Salmon settings for redstone configuration", exception);
+            }
+        }
+        return this.salmonConfiguration;
+    }
+
+    private void applySalmonRedstoneConfiguration(final WorldConfiguration worldConfiguration) {
+        final SalmonConfiguration salmon = this.salmonConfiguration();
+        if (!salmon.enabled()) {
+            return;
+        }
+        worldConfiguration.misc.redstoneImplementation = switch (salmon.options().redstoneImplementation()) {
+            case PAPER -> worldConfiguration.misc.redstoneImplementation;
+            case VANILLA -> WorldConfiguration.Misc.RedstoneImplementation.VANILLA;
+            case EIGENCRAFT -> WorldConfiguration.Misc.RedstoneImplementation.EIGENCRAFT;
+            case ALTERNATE_CURRENT -> WorldConfiguration.Misc.RedstoneImplementation.ALTERNATE_CURRENT;
+        };
     }
 
     @Override
@@ -330,10 +358,15 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
 
     public void reloadConfigs(MinecraftServer server) {
         try {
+            this.salmonConfiguration = null;
             this.initializeGlobalConfiguration(server.registryAccess(), reloader(this.globalConfigClass, GlobalConfiguration.get()));
             this.initializeWorldDefaultsConfiguration(server.registryAccess());
             for (ServerLevel level : server.getAllLevels()) {
-                this.createWorldConfig(createWorldContextMap(level), reloader(this.worldConfigClass, level.paperConfig()));
+                final WorldConfiguration worldConfiguration = this.createWorldConfig(
+                    createWorldContextMap(level),
+                    reloader(this.worldConfigClass, level.paperConfig())
+                );
+                this.applySalmonRedstoneConfiguration(worldConfiguration);
             }
         } catch (Exception ex) {
             throw new RuntimeException("Could not reload paper configuration files", ex);
