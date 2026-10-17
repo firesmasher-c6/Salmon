@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 public class SalmonScriptParserTest {
@@ -108,5 +111,24 @@ public class SalmonScriptParserTest {
         }
         assertFalse(script.instructions().isEmpty());
         assertInstanceOf(SalmonScript.SetVariable.class, script.instructions().getFirst());
+    }
+
+    @Test
+    void parsesRepositoryScriptExamples() throws Exception {
+        Path directory = Path.of("").toAbsolutePath();
+        while (directory != null && !Files.isDirectory(directory.resolve("salmon-scripts-examples"))) {
+            directory = directory.getParent();
+        }
+        assertTrue(directory != null, "salmon-scripts-examples directory was not found");
+
+        final Path examples = directory.resolve("salmon-scripts-examples");
+        final List<Path> scripts;
+        try (Stream<Path> paths = Files.list(examples)) {
+            scripts = paths.filter(path -> path.getFileName().toString().endsWith(".slms")).sorted().toList();
+        }
+        assertEquals(4, scripts.size());
+        for (Path script : scripts) {
+            SalmonScriptParser.parse(script, Files.readString(script));
+        }
     }
 }

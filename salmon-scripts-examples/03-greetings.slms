@@ -1,0 +1,20 @@
+meta(
+    name: "Greetings",
+    version: 1.0.0,
+    author: "Salmon Examples"
+)
+
+# Functions return one expression and can be used to build messages.
+function greeting(serverName)
+    return "Welcome to " .. serverName .. "!"
+end
+
+local serverName = "Salmon"
+local message = greeting(serverName)
+
+if string.len(serverName) > 0 then
+    print(message)
+    command("say " .. message)
+else
+    print("Set serverName before enabling the greeting command.")
+end

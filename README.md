@@ -192,6 +192,9 @@ The implemented instructions are `run command ...` and
 instructions can generate chunks and apply changes on the server thread.
 See **[SALMON-SCRIPTS.md](SALMON-SCRIPTS.md)** for the full syntax dictionary,
 examples, limits, and troubleshooting guide.
+Runnable starter examples are in **[salmon-scripts-examples](salmon-scripts-examples/)**.
+Review each example and change its world names, coordinates, and commands to
+match your server before copying it into `salmon-scripts/`.
 
 ## Build Salmon from source
 
