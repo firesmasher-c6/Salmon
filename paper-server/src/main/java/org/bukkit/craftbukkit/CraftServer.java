@@ -623,6 +623,14 @@ public final class CraftServer implements Server {
         }
     }
 
+    public void registerSalmonCommands() {
+        if (this.pluginManager.getPermission("salmon.command") == null) {
+            this.pluginManager.addPermission(new Permission("salmon.command", org.bukkit.permissions.PermissionDefault.OP));
+        }
+        this.commandMap.register("salmon", "Salmon", new SalmonCommand(this.salmonRuntime));
+        this.commandMap.register("salmon", "Salmon", new SalmonSmpCommand(this.salmonRuntime));
+    }
+
     public void disablePlugins() {
         this.pluginManager.disablePlugins();
     }
@@ -1038,11 +1046,7 @@ public final class CraftServer implements Server {
         this.reloadData();
         org.spigotmc.SpigotConfig.registerCommands(); // Spigot
         io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
-        if (this.pluginManager.getPermission("salmon.command") == null) {
-            this.pluginManager.addPermission(new Permission("salmon.command", org.bukkit.permissions.PermissionDefault.OP));
-        }
-        this.commandMap.register("salmon", "Salmon", new SalmonCommand(this.salmonRuntime));
-        this.commandMap.register("salmon", "Salmon", new SalmonSmpCommand(this.salmonRuntime));
+        this.registerSalmonCommands();
         this.spark.registerCommandBeforePlugins(this); // Paper - spark
         this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
         this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");

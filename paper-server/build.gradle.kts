@@ -192,7 +192,7 @@ tasks.jar {
         val git = Git(rootProject.layout.projectDirectory.path)
         val mcVersion = rootProject.providers.gradleProperty("mcVersion").get()
         val build = System.getenv("BUILD_NUMBER") ?: null
-        val salmonBuild = System.getenv("SALMON_BUILD") ?: "4e-003"
+        val salmonBuild = System.getenv("SALMON_BUILD") ?: "5e-004"
         val buildTime = providers.environmentVariable("BUILD_STARTED_AT").map(Instant::parse).orElse(Instant.EPOCH).get()
         val gitHash = git.exec(providers, "rev-parse", "--short=7", "HEAD").get().trim()
         val implementationVersion = "$mcVersion-$salmonBuild"

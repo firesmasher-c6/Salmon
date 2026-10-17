@@ -68,12 +68,12 @@ in `paper-server/build/libs/`.
 4. Start the server again and tune Salmon in `salmon.yml` and
    `config/salmon-opts.yml`.
 
-Salmon's current version is **Minecraft `1.21.11`, build `4e-003`**. Rename the
-runnable server bundle to `salmon-1.21.11-4e-003.jar` and start it from your
+Salmon's current version is **Minecraft `1.21.11`, build `5e-004`**. Rename the
+runnable server bundle to `salmon-1.21.11-5e-004.jar` and start it from your
 server directory:
 
 ```sh
-java -Xms1G -Xmx4G -jar salmon-1.21.11-4e-003.jar --nogui
+java -Xms1G -Xmx4G -jar salmon-1.21.11-5e-004.jar --nogui
 ```
 
 Keep the server JAR, world, and configuration files in the same server
@@ -259,10 +259,10 @@ release filename before distributing or running it:
 
 ```sh
 mv paper-server/build/libs/paper-bundler-1.21.11-R0.1-SNAPSHOT-mojmap.jar \
-  paper-server/build/libs/salmon-1.21.11-4e-003.jar
+  paper-server/build/libs/salmon-1.21.11-5e-004.jar
 ```
 
-The release identity is **Minecraft `1.21.11`, build `4e-003`**. Keep the
+The release identity is **Minecraft `1.21.11`, build `5e-004`**. Keep the
 filename consistent in your release notes and server launch command.
 The plain `Salmon-*.jar` output is not the bundled server distribution; rename
 and use the `paper-bundler-*-mojmap.jar` artifact. Building the project does
