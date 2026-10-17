@@ -13,14 +13,14 @@ import static net.kyori.adventure.text.Component.text;
 
 public final class SalmonCommand extends Command {
     private static final Logger LOGGER = Logger.getLogger("Salmon");
-    private static final List<String> ROOT_ARGUMENTS = List.of("status", "modrinth");
+    private static final List<String> ROOT_ARGUMENTS = List.of("status", "modrinth", "lagreport");
     private final SalmonRuntime runtime;
 
     public SalmonCommand(final SalmonRuntime runtime) {
         super("salmon");
         this.runtime = runtime;
         this.description = "View Salmon status and manage Modrinth plugin services";
-        this.usageMessage = "/salmon [status|modrinth search <query>|modrinth install <slug>]";
+        this.usageMessage = "/salmon [status|lagreport|modrinth search <query>|modrinth install <slug>]";
         this.setPermission("salmon.command");
     }
 
@@ -34,6 +34,11 @@ public final class SalmonCommand extends Command {
             final boolean enabled = this.runtime.isEnabled();
             sender.sendMessage(text("Salmon is " + (enabled ? "enabled" : "disabled") + ".",
                 enabled ? NamedTextColor.GREEN : NamedTextColor.RED));
+            return true;
+        }
+
+        if (args.length == 1 && args[0].equalsIgnoreCase("lagreport")) {
+            this.runtime.lagReport().forEach(sender::sendMessage);
             return true;
         }
 

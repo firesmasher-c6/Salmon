@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/Java-21+-ED8B00?logo=openjdk&logoColor=white" alt="Java 21 or later">
 </p>
 
-**Salmon 1r-007 is the first stable release of Salmon.** Salmon is a
+**Salmon 2r-008 is the second stable Salmon release.** Salmon is a
 Minecraft Java server based on Paper. It keeps the Paper-compatible server and
 plugin foundation while adding Salmon-branded configuration, optimization
 controls, diagnostics, and a plugin API.
@@ -44,6 +44,9 @@ controls, diagnostics, and a plugin API.
   optional plugin-metric reporting. World changes and commands stay on the
   Minecraft server thread.
 - **The `/salmon` command** for status and Modrinth plugin services.
+- **GitHub release checks** for `/ver` (and at startup), reporting whether the
+  running Salmon build is current, outdated, or ahead of the latest published
+  release.
 - **MOTD Builder and `/smp`** for configurable server-list messages and
   maintenance mode with a dedicated name/UUID allowlist.
 - **Redstone Optimization** using Paper's Alternate Current engine for much
@@ -68,18 +71,18 @@ in `paper-server/build/libs/`.
 4. Start the server again and tune Salmon in `salmon.yml` and
    `config/salmon-opts.yml`.
 
-Salmon's current version is **Minecraft `1.21.11`, build `1r-007`**. Rename the
-runnable server bundle to `salmon-1.21.11-1r-007.jar` and start it from your
+Salmon's current version is **Minecraft `1.21.11`, build `2r-008`**. Rename the
+runnable server bundle to `salmon-1.21.11-2r-008.jar` and start it from your
 server directory:
 
 ```sh
-java -Xms1G -Xmx4G -jar salmon-1.21.11-1r-007.jar --nogui
+java -Xms1G -Xmx4G -jar salmon-1.21.11-2r-008.jar --nogui
 ```
 
-> **Development notice:** Until November 1, 2026, Salmon development is limited
-> to bug fixes and necessary patches. New features and optimization work are
-> paused while the project's GitHub Copilot usage allowance resets (73% used as
-> of the 1r-007 release). Development can resume after that date.
+> **Development notice:** `2r-008` is planned to be Salmon's final build for
+> October 2026. Feature and optimization work is paused until November 1, 2026,
+> when development is scheduled to resume. Necessary bug fixes and patches may
+> still be made during the pause.
 
 Keep the server JAR, world, and configuration files in the same server
 directory. Make backups before changing optimization settings or running
@@ -122,9 +125,17 @@ Run these as an operator (or grant the `salmon.command` permission):
 ```text
 /salmon
 /salmon status
+/salmon lagreport
 /salmon modrinth search <query>
 /salmon modrinth install <slug>
 ```
+
+`/salmon lagreport` prints a read-only, on-demand snapshot of Paper's existing
+TPS/MSPT statistics, loaded entity and chunk counts, and plugin timing metrics
+if they are enabled. It does not run continuously or add per-tick tracking.
+`/ver` checks Salmon's latest published GitHub release instead of Paper's build
+feed; the network request runs asynchronously, is cached for 12 minutes, and
+reports local builds that are ahead of the published release.
 
 Modrinth searches and downloads run on dedicated Salmon worker threads, not the
 Minecraft tick thread. Plugin JARs are validated and installed in the server's
@@ -232,10 +243,10 @@ release filename before distributing or running it:
 
 ```sh
 mv paper-server/build/libs/paper-bundler-1.21.11-R0.1-SNAPSHOT-mojmap.jar \
-  paper-server/build/libs/salmon-1.21.11-1r-007.jar
+  paper-server/build/libs/salmon-1.21.11-2r-008.jar
 ```
 
-The release identity is **Minecraft `1.21.11`, build `1r-007`**. Keep the
+The release identity is **Minecraft `1.21.11`, build `2r-008`**. Keep the
 filename consistent in your release notes and server launch command.
 The plain `Salmon-*.jar` output is not the bundled server distribution; rename
 and use the `paper-bundler-*-mojmap.jar` artifact. Building the project does

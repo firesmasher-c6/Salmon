@@ -15,6 +15,7 @@ class SalmonCommandCompletionTest {
         final SalmonCommand command = new SalmonCommand(null);
 
         assertEquals(List.of("status"), command.tabComplete(this.sender, "salmon", new String[] {"s"}));
+        assertEquals(List.of("lagreport"), command.tabComplete(this.sender, "salmon", new String[] {"lag"}));
         assertEquals(List.of("search"), command.tabComplete(this.sender, "salmon", new String[] {"modrinth", "S"}));
     }
 

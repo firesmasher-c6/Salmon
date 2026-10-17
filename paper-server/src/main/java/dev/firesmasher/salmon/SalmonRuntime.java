@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
@@ -225,6 +227,44 @@ public final class SalmonRuntime implements AutoCloseable {
 
     public boolean isEnabled() {
         return this.configuration.enabled();
+    }
+
+    public List<Component> lagReport() {
+        final double[] tps = this.server.getTPS();
+        final double averageMspt = this.server.getAverageTickTime();
+        int entities = 0;
+        int chunks = 0;
+        for (World world : this.server.getWorlds()) {
+            entities += world.getEntityCount();
+            chunks += world.getChunkCount();
+        }
+
+        final List<Component> report = new ArrayList<>();
+        report.add(Component.text("Salmon Lag Report (on-demand snapshot)", NamedTextColor.GOLD));
+        report.add(Component.text(String.format(Locale.ROOT, "TPS (1m / 5m / 15m): %.2f / %.2f / %.2f",
+            tps[0], tps[1], tps[2])));
+        report.add(Component.text(String.format(Locale.ROOT, "Average MSPT (5s): %.2f ms", averageMspt)));
+        report.add(Component.text("Worlds: " + this.server.getWorlds().size()
+            + " | Players: " + this.server.getOnlinePlayers().size()
+            + " | Loaded chunks: " + chunks
+            + " | Entities: " + entities));
+
+        if (!PluginExecutionMetrics.isEnabled()) {
+            report.add(Component.text("Plugin metrics: disabled (enable in config/salmon-opts.yml to collect)",
+                NamedTextColor.GRAY));
+        } else {
+            final List<Snapshot> pluginMetrics = PluginExecutionMetrics.snapshot();
+            report.add(Component.text("Plugin metrics: enabled; current collection window", NamedTextColor.AQUA));
+            if (pluginMetrics.isEmpty()) {
+                report.add(Component.text("No plugin timing samples are available yet.", NamedTextColor.GRAY));
+            } else {
+                pluginMetrics.stream().limit(5).forEach(snapshot -> report.add(Component.text(String.format(
+                    Locale.ROOT, " - %s: %d calls, %.2f ms total (max %.2f ms)",
+                    snapshot.plugin(), snapshot.calls(), snapshot.totalNanos() / 1_000_000.0,
+                    snapshot.maxCallNanos() / 1_000_000.0))));
+            }
+        }
+        return List.copyOf(report);
     }
 
     <T> CompletableFuture<T> supplyApiAsync(final Supplier<T> task) {

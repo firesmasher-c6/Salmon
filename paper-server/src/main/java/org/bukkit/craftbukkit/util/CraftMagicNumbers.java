@@ -13,6 +13,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JavaOps;
 import com.mojang.serialization.JsonOps;
+import dev.firesmasher.salmon.SalmonVersionFetcher;
 import io.papermc.paper.adventure.AdventureCodecs;
 import io.papermc.paper.entity.EntitySerializationFlag;
 import io.papermc.paper.registry.RegistryKey;
@@ -485,7 +486,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
     @Override
     public com.destroystokyo.paper.util.VersionFetcher getVersionFetcher() {
-        return new com.destroystokyo.paper.PaperVersionFetcher();
+        return new SalmonVersionFetcher();
     }
 
     @Override

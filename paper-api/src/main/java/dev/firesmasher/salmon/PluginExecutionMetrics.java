@@ -24,6 +24,10 @@ public final class PluginExecutionMetrics {
         }
     }
 
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
     public static void recordEvent(@Nullable final Plugin plugin, final long elapsedNanos) {
         record(plugin, elapsedNanos, true);
     }
@@ -42,8 +46,16 @@ public final class PluginExecutionMetrics {
 
     public static List<Snapshot> drain() {
         final ConcurrentHashMap<String, MutableSnapshot> previous = CURRENT.getAndSet(new ConcurrentHashMap<>());
-        final List<Snapshot> snapshots = new ArrayList<>(previous.size());
-        previous.forEach((plugin, metrics) -> snapshots.add(metrics.snapshot(plugin)));
+        return snapshot(previous);
+    }
+
+    public static List<Snapshot> snapshot() {
+        return snapshot(CURRENT.get());
+    }
+
+    private static List<Snapshot> snapshot(final ConcurrentHashMap<String, MutableSnapshot> metrics) {
+        final List<Snapshot> snapshots = new ArrayList<>(metrics.size());
+        metrics.forEach((plugin, pluginMetrics) -> snapshots.add(pluginMetrics.snapshot(plugin)));
         snapshots.sort(Comparator.comparingLong(Snapshot::totalNanos).reversed());
         return List.copyOf(snapshots);
     }
