@@ -77,13 +77,6 @@ class PaperEventManager {
             }
         }
 
-        if (event instanceof org.bukkit.event.server.ServerLoadEvent loadEvent
-            && loadEvent.getType() == org.bukkit.event.server.ServerLoadEvent.LoadType.STARTUP) {
-            dev.firesmasher.salmon.SalmonRuntime runtime = dev.firesmasher.salmon.SalmonRuntime.getInstance();
-            if (runtime != null) {
-                runtime.loadScriptsAtStartup();
-            }
-        }
     }
 
     public void registerEvents(@NotNull Listener listener, @NotNull Plugin plugin) {

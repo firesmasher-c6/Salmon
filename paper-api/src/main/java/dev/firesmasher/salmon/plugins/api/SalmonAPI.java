@@ -1,6 +1,5 @@
 package dev.firesmasher.salmon.plugins.api;
 
-import java.util.Set;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -131,44 +130,6 @@ public abstract class SalmonAPI {
      * @return immutable plugin list
      */
     public abstract List<Plugin> plugins();
-
-    /**
-     * Registers a function that Salmon Scripts can call by name.
-     *
-     * <p>Function names are case-sensitive identifiers. Names already used by
-     * the language or another plugin cannot be registered. Functions execute
-     * synchronously on the server thread and must return a supported script
-     * value.</p>
-     *
-     * @param owner owning plugin
-     * @param name script-callable identifier
-     * @param function function implementation
-     */
-    public abstract void registerScriptFunction(Plugin owner, String name, SalmonScriptFunction function);
-
-    /**
-     * Removes all script functions registered by a plugin.
-     *
-     * @param owner owning plugin
-     */
-    public abstract void unregisterScriptFunctions(Plugin owner);
-
-    /**
-     * Gets the immutable set of currently registered script function names.
-     *
-     * @return function names
-     */
-    public abstract Set<String> scriptFunctionNames();
-
-    /**
-     * Invokes a registered script function.
-     *
-     * @param name registered function name
-     * @param context script call location
-     * @param arguments immutable script arguments
-     * @return supported script value
-     */
-    public abstract Object invokeScriptFunction(String name, SalmonScriptContext context, List<Object> arguments);
 
     /**
      * @param api Salmon implementation

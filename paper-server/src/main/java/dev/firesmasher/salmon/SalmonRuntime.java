@@ -1,7 +1,6 @@
 package dev.firesmasher.salmon;
 
 import dev.firesmasher.salmon.PluginExecutionMetrics.Snapshot;
-import dev.firesmasher.salmon.modifiers.SalmonScriptManager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -46,7 +45,6 @@ public final class SalmonRuntime implements AutoCloseable {
     private final ScheduledExecutorService executor;
     private final ExecutorService modrinthExecutor;
     private final ExecutorService apiExecutor;
-    private final SalmonScriptManager scriptManager;
     private final ModrinthService modrinthService;
     private final SalmonMotdManager motdManager;
     private final Map<String, Long> lastSlowWarningNanos = new HashMap<>();
@@ -55,7 +53,6 @@ public final class SalmonRuntime implements AutoCloseable {
         final Path pluginDirectory) throws IOException, org.bukkit.configuration.InvalidConfigurationException {
         this.server = server;
         this.configuration = configuration;
-        this.scriptManager = new SalmonScriptManager(server, serverDirectory);
         this.modrinthService = new ModrinthService(pluginDirectory, net.minecraft.SharedConstants.getCurrentVersion().name());
         this.motdManager = new SalmonMotdManager(serverDirectory.resolve("salmon.yml"));
         this.executor = Executors.newSingleThreadScheduledExecutor(task -> {
@@ -100,7 +97,7 @@ public final class SalmonRuntime implements AutoCloseable {
                     + options.redstoneImplementation().name().toLowerCase(java.util.Locale.ROOT));
             });
         } else {
-            LOGGER.warning("Salmon is disabled in salmon.yml; optimizer and scripts will not run");
+            LOGGER.warning("Salmon is disabled in salmon.yml; Salmon optimizations will not run");
         }
         if (configuration.enabled() && options.pluginMetricsEnabled()) {
             runtime.executor.scheduleWithFixedDelay(
@@ -196,10 +193,6 @@ public final class SalmonRuntime implements AutoCloseable {
             || category == MobCategory.WATER_CREATURE;
     }
 
-    public static SalmonRuntime getInstance() {
-        return instance;
-    }
-
     public static Component renderMotd(final Component fallback, final int onlinePlayers, final int maxPlayers) {
         final SalmonRuntime runtime = instance;
         return runtime == null ? fallback : runtime.motdManager.render(onlinePlayers, maxPlayers);
@@ -234,14 +227,6 @@ public final class SalmonRuntime implements AutoCloseable {
         return this.configuration.enabled();
     }
 
-    public void executeBackground(final Runnable action) {
-        this.executor.execute(action);
-    }
-
-    public void executeBackgroundAfter(final Runnable action, final long delay, final TimeUnit unit) {
-        this.executor.schedule(action, delay, unit);
-    }
-
     <T> CompletableFuture<T> supplyApiAsync(final Supplier<T> task) {
         return CompletableFuture.supplyAsync(task, this.apiExecutor);
     }
@@ -252,18 +237,6 @@ public final class SalmonRuntime implements AutoCloseable {
                 task.accept(this.server);
             }
         });
-    }
-
-    public void loadScriptsAtStartup() {
-        this.scriptManager.loadAtStartup();
-    }
-
-    public boolean reloadScripts() {
-        if (!this.configuration.enabled()) {
-            return false;
-        }
-        this.scriptManager.loadAtStartup();
-        return true;
     }
 
     public void searchModrinth(final String query, final java.util.function.Consumer<List<ModrinthService.Project>> success,

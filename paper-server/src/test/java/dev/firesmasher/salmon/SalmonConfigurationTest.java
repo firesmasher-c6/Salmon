@@ -28,7 +28,7 @@ class SalmonConfigurationTest {
         assertEquals(48, configuration.options().maxWaterEntitiesPerChunk());
         assertEquals(16, configuration.options().maxAmbientEntitiesPerChunk());
         assertFalse(configuration.options().cleanupEnabled());
-        assertTrue(configuration.options().pluginMetricsEnabled());
+        assertFalse(configuration.options().pluginMetricsEnabled());
         assertTrue(configuration.options().chunkyPregenerationEnabled());
         assertTrue(configuration.options().modrinthServicesEnabled());
         assertEquals(SalmonConfiguration.RedstoneImplementation.ALTERNATE_CURRENT,
@@ -56,6 +56,7 @@ class SalmonConfigurationTest {
               modrinth:
                 enabled: false
               metrics:
+                enabled: true
                 report-interval-seconds: 90
             """);
 
@@ -65,6 +66,7 @@ class SalmonConfigurationTest {
         assertEquals(24, configuration.options().maxPrimedTntPerChunk());
         assertEquals(80, configuration.options().maxPassiveEntitiesPerChunk());
         assertEquals(90, configuration.options().pluginReportIntervalSeconds());
+        assertTrue(configuration.options().pluginMetricsEnabled());
         assertFalse(configuration.options().chunkyPregenerationEnabled());
         assertFalse(configuration.options().modrinthServicesEnabled());
         assertFalse(configuration.options().cleanupEnabled());

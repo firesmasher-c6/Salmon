@@ -14,8 +14,7 @@ class SalmonCommandCompletionTest {
     void completesSalmonCommandsAndFiltersCaseInsensitively() {
         final SalmonCommand command = new SalmonCommand(null);
 
-        assertEquals(List.of("status", "scripts"), command.tabComplete(this.sender, "salmon", new String[] {"s"}));
-        assertEquals(List.of("reload"), command.tabComplete(this.sender, "salmon", new String[] {"scripts", ""}));
+        assertEquals(List.of("status"), command.tabComplete(this.sender, "salmon", new String[] {"s"}));
         assertEquals(List.of("search"), command.tabComplete(this.sender, "salmon", new String[] {"modrinth", "S"}));
     }
 

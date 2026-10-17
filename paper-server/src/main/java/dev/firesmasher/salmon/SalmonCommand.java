@@ -13,14 +13,14 @@ import static net.kyori.adventure.text.Component.text;
 
 public final class SalmonCommand extends Command {
     private static final Logger LOGGER = Logger.getLogger("Salmon");
-    private static final List<String> ROOT_ARGUMENTS = List.of("status", "scripts", "modrinth");
+    private static final List<String> ROOT_ARGUMENTS = List.of("status", "modrinth");
     private final SalmonRuntime runtime;
 
     public SalmonCommand(final SalmonRuntime runtime) {
         super("salmon");
         this.runtime = runtime;
-        this.description = "View Salmon status and manage Salmon scripts";
-        this.usageMessage = "/salmon [status|scripts reload|modrinth search <query>|modrinth install <slug>]";
+        this.description = "View Salmon status and manage Modrinth plugin services";
+        this.usageMessage = "/salmon [status|modrinth search <query>|modrinth install <slug>]";
         this.setPermission("salmon.command");
     }
 
@@ -34,18 +34,6 @@ public final class SalmonCommand extends Command {
             final boolean enabled = this.runtime.isEnabled();
             sender.sendMessage(text("Salmon is " + (enabled ? "enabled" : "disabled") + ".",
                 enabled ? NamedTextColor.GREEN : NamedTextColor.RED));
-            sender.sendMessage(text("Optimizer worker: " + (enabled ? "SalmonMC Thread (active)" : "disabled")));
-            sender.sendMessage(text("Use /salmon scripts reload to reload and run scripts."));
-            return true;
-        }
-
-        if (args.length == 2 && args[0].equalsIgnoreCase("scripts") && args[1].equalsIgnoreCase("reload")) {
-            if (!this.runtime.reloadScripts()) {
-                sender.sendMessage(text("Salmon is disabled; scripts were not reloaded.", NamedTextColor.RED));
-                return true;
-            }
-            sender.sendMessage(text("Salmon script reload queued. See the server log for loading and execution results.",
-                NamedTextColor.GREEN));
             return true;
         }
 
@@ -94,9 +82,6 @@ public final class SalmonCommand extends Command {
     public List<String> tabComplete(final CommandSender sender, final String alias, final String[] args) {
         if (args.length == 1) {
             return matching(ROOT_ARGUMENTS, args[0]);
-        }
-        if (args.length == 2 && args[0].equalsIgnoreCase("scripts")) {
-            return matching(List.of("reload"), args[1]);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("modrinth")) {
             return matching(List.of("search", "install"), args[1]);

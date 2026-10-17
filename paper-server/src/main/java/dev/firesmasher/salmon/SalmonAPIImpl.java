@@ -1,12 +1,6 @@
 package dev.firesmasher.salmon;
 
 import dev.firesmasher.salmon.plugins.api.SalmonAPI;
-import dev.firesmasher.salmon.plugins.api.SalmonScriptContext;
-import dev.firesmasher.salmon.plugins.api.SalmonScriptFunction;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.SharedConstants;
 import org.bukkit.Bukkit;
@@ -17,11 +11,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 final class SalmonAPIImpl extends SalmonAPI {
-    private static final Set<String> RESERVED_NAMES = Set.of(
-        "print", "tostring", "tonumber", "type", "math.abs", "math.floor", "math.ceil", "math.sqrt",
-        "math.min", "math.max", "string.lower", "string.upper", "string.len"
-    );
-    private final Map<String, Registration> functions = new ConcurrentHashMap<>();
     private final SalmonRuntime runtime;
 
     private SalmonAPIImpl(final SalmonRuntime runtime) {
@@ -118,70 +107,6 @@ final class SalmonAPIImpl extends SalmonAPI {
     public java.util.List<Plugin> plugins() {
         requireServerThread();
         return java.util.List.of(Bukkit.getPluginManager().getPlugins());
-    }
-
-    @Override
-    public void registerScriptFunction(final Plugin owner, final String name, final SalmonScriptFunction function) {
-        if (owner == null || function == null) {
-            throw new IllegalArgumentException("plugin owner and script function are required");
-        }
-        if (!owner.isEnabled()) {
-            throw new IllegalStateException("plugin '" + owner.getName() + "' must be enabled to register script functions");
-        }
-        if (name == null || !name.matches("[A-Za-z_][A-Za-z0-9_]*")) {
-            throw new IllegalArgumentException("script function name must be a valid identifier");
-        }
-        final String key = name.toLowerCase(Locale.ROOT);
-        if (RESERVED_NAMES.contains(key)) {
-            throw new IllegalArgumentException("script function name '" + name + "' is reserved");
-        }
-        final Registration previous = this.functions.putIfAbsent(name, new Registration(owner, function));
-        if (previous != null) {
-            throw new IllegalArgumentException("script function '" + name + "' is already registered");
-        }
-    }
-
-    @Override
-    public void unregisterScriptFunctions(final Plugin owner) {
-        this.functions.entrySet().removeIf(entry -> entry.getValue().owner() == owner);
-    }
-
-    @Override
-    public Set<String> scriptFunctionNames() {
-        return Set.copyOf(this.functions.keySet());
-    }
-
-    @Override
-    public Object invokeScriptFunction(
-        final String name,
-        final SalmonScriptContext context,
-        final java.util.List<Object> arguments
-    ) {
-        final Registration registration = this.functions.get(name);
-        if (registration == null) {
-            throw new IllegalArgumentException("unknown function '" + name + "'");
-        }
-        if (!registration.owner().isEnabled()) {
-            this.functions.remove(name, registration);
-            throw new IllegalStateException("function provider plugin '" + registration.owner().getName() + "' is disabled");
-        }
-        try {
-            final Object result = registration.function().invoke(context, arguments);
-            if (result == null || result instanceof String || result instanceof Boolean) {
-                return result;
-            }
-            if (result instanceof Number number && Double.isFinite(number.doubleValue())) {
-                return number.doubleValue();
-            }
-            throw new IllegalArgumentException("script functions must return nil, a string, a boolean, or a finite number");
-        } catch (RuntimeException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new IllegalStateException("Salmon script function '" + name + "' failed", ex);
-        }
-    }
-
-    private record Registration(Plugin owner, SalmonScriptFunction function) {
     }
 
     private static void requireEnabledOwner(final Plugin owner) {

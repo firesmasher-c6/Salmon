@@ -77,8 +77,9 @@ plugins:
     # Enables operator/console Modrinth plugin search and installation with required dependencies.
     enabled: true
   metrics:
-    # Collect plugin event-handler and scheduler-task execution timings.
-    enabled: true
+    # Collecting plugin timings adds work to every measured handler/task.
+    # Disabled by default; enable only when actively diagnosing performance.
+    enabled: false
     # Report interval. Aggregation, sorting, and logging run on SalmonMC Thread.
     report-interval-seconds: 60
     # Maximum number of plugins included in each report.

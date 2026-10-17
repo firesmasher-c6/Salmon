@@ -16,9 +16,8 @@
 # Chunk caps are enabled by default with limits for TNT and hostile, passive,
 # water, and ambient mobs. They reject new matching spawns in crowded chunks.
 # Entity cleanup remains disabled by default because it permanently removes
-# matching mobs from existing worlds. Plugin metrics only measure and report
-# execution time; they do not disable, restart, modify, or otherwise control
-# plugins.
+# matching mobs from existing worlds. Plugin metrics are disabled by default
+# because collecting timings adds work to plugin handlers and tasks.
 #
 # Values in this file override the corresponding values in
 # config/salmon-defaults.yml. The defaults file is a reference/fallback; edit
@@ -28,7 +27,6 @@
 #   - Setting chunks.enabled to true can reject entity spawns after a cap.
 #   - Setting entities.cleanup.enabled to true permanently removes eligible
 #     mobs. Back up worlds before enabling cleanup or widening its entity list.
-#   - "run command" scripts have console authority; plugin metrics do not.
 #   - Modrinth installs plugin code with the permissions of the server process.
 #     Review projects before installing; new plugins load after a restart.
 #   - Chunky auto-install contacts Modrinth before plugin initialization and
@@ -153,8 +151,9 @@ plugins:
 
   metrics:
     # Collect timing statistics for plugin event handlers and Bukkit scheduler
-    # tasks. Salmon reports measurements; it never disables or restarts plugins.
-    enabled: true
+    # tasks. This adds work to measured calls, so it is disabled by default.
+    # Enable only while diagnosing performance.
+    enabled: false
 
     # How often to write a summary to the server log, in seconds.
     # Reporting work (aggregation and formatting) runs on SalmonMC Thread.
