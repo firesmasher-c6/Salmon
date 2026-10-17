@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
+import java.util.UUID;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -77,5 +80,34 @@ class SalmonConfigurationTest {
             IllegalArgumentException.class,
             () -> SalmonConfiguration.load(this.serverDirectory)
         );
+    }
+
+    @Test
+    void buildsMotdAndEnforcesPersistedMaintenanceWhitelist() throws Exception {
+        SalmonConfiguration.load(this.serverDirectory);
+        final SalmonMotdManager manager = new SalmonMotdManager(this.serverDirectory.resolve("salmon.yml"));
+
+        assertEquals("Salmon SMP\nA Salmon server (2/20)",
+            PlainTextComponentSerializer.plainText().serialize(manager.render(2, 20)));
+        assertTrue(manager.allowsLogin("Guest", UUID.randomUUID()));
+
+        manager.setMaintenance(true);
+        final UUID staffId = UUID.randomUUID();
+        assertFalse(manager.allowsLogin("Guest", UUID.randomUUID()));
+        manager.addMaintenanceWhitelist("StaffName");
+        manager.addMaintenanceWhitelist(staffId.toString());
+        assertTrue(manager.allowsLogin("staffname", UUID.randomUUID()));
+        assertTrue(manager.allowsLogin("SomeoneElse", staffId));
+        assertEquals("Salmon SMP\nMaintenance in progress",
+            PlainTextComponentSerializer.plainText().serialize(manager.render(2, 20)));
+
+        assertTrue(manager.removeMaintenanceWhitelist("STAFFNAME"));
+        assertFalse(manager.allowsLogin("staffname", UUID.randomUUID()));
+        manager.setMaintenance(false);
+        assertTrue(manager.allowsLogin("Guest", UUID.randomUUID()));
+
+        final SalmonMotdManager reloaded = new SalmonMotdManager(this.serverDirectory.resolve("salmon.yml"));
+        assertFalse(reloaded.maintenanceEnabled());
+        assertEquals(Set.of(staffId.toString()), reloaded.maintenanceWhitelist());
     }
 }

@@ -265,6 +265,7 @@ import net.md_5.bungee.api.chat.BaseComponent; // Spigot
 import dev.firesmasher.salmon.SalmonConfiguration;
 import dev.firesmasher.salmon.SalmonCommand;
 import dev.firesmasher.salmon.SalmonRuntime;
+import dev.firesmasher.salmon.SalmonSmpCommand;
 
 public final class CraftServer implements Server {
     private final String serverName = io.papermc.paper.ServerBuildInfo.buildInfo().brandName();
@@ -1041,6 +1042,7 @@ public final class CraftServer implements Server {
             this.pluginManager.addPermission(new Permission("salmon.command", org.bukkit.permissions.PermissionDefault.OP));
         }
         this.commandMap.register("salmon", "Salmon", new SalmonCommand(this.salmonRuntime));
+        this.commandMap.register("salmon", "Salmon", new SalmonSmpCommand(this.salmonRuntime));
         this.spark.registerCommandBeforePlugins(this); // Paper - spark
         this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
         this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
@@ -2338,7 +2340,7 @@ public final class CraftServer implements Server {
 
     @Override
     public net.kyori.adventure.text.Component motd() {
-        return this.console.motd();
+        return this.salmonRuntime.motd(this.getOnlinePlayers().size(), this.getMaxPlayers());
     }
 
     @Override

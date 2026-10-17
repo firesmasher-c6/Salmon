@@ -45,3 +45,31 @@ salmon:
   # false: disable Salmon-specific optimization behavior and skip startup
   #        scripts. Paper's normal server and plugin behavior is unchanged.
   enabled: true
+
+# ============================================================================
+# Salmon MOTD Builder
+#
+# This MOTD replaces server.properties for server-list status. Use & color
+# codes and {online}/{max} placeholders in either list. Changes take effect
+# after /smp motd reload or a server restart.
+#
+# Maintenance mode displays maintenance-lines and rejects logins unless the
+# player's UUID or name is in smp.maintenance.whitelist. This is separate from
+# Minecraft's regular whitelist. Add trusted staff before enabling maintenance.
+# ============================================================================
+motd:
+  lines:
+    - "&bSalmon SMP"
+    - "&7A Salmon server &8({online}/{max})"
+  maintenance-lines:
+    - "&bSalmon SMP"
+    - "&cMaintenance in progress"
+
+smp:
+  maintenance:
+    # Toggle with /smp maintenance on|off. When enabled, only the entries in
+    # this dedicated maintenance whitelist may join.
+    enabled: false
+    # Add or remove entries in-game with /smp maintenance whitelist add|rm.
+    # Entries may be player names or UUIDs; names match case-insensitively.
+    whitelist: []

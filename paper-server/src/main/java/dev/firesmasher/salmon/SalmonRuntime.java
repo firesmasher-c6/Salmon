@@ -19,8 +19,10 @@ import java.util.logging.Logger;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Monster;
@@ -46,14 +48,16 @@ public final class SalmonRuntime implements AutoCloseable {
     private final ExecutorService apiExecutor;
     private final SalmonScriptManager scriptManager;
     private final ModrinthService modrinthService;
+    private final SalmonMotdManager motdManager;
     private final Map<String, Long> lastSlowWarningNanos = new HashMap<>();
 
     private SalmonRuntime(final CraftServer server, final SalmonConfiguration configuration, final Path serverDirectory,
-        final Path pluginDirectory) throws IOException {
+        final Path pluginDirectory) throws IOException, org.bukkit.configuration.InvalidConfigurationException {
         this.server = server;
         this.configuration = configuration;
         this.scriptManager = new SalmonScriptManager(server, serverDirectory);
         this.modrinthService = new ModrinthService(pluginDirectory, net.minecraft.SharedConstants.getCurrentVersion().name());
+        this.motdManager = new SalmonMotdManager(serverDirectory.resolve("salmon.yml"));
         this.executor = Executors.newSingleThreadScheduledExecutor(task -> {
             final Thread thread = new Thread(task, "SalmonMC Thread");
             thread.setDaemon(true);
@@ -72,7 +76,8 @@ public final class SalmonRuntime implements AutoCloseable {
     }
 
     public static SalmonRuntime start(final CraftServer server, final SalmonConfiguration configuration,
-        final Path serverDirectory, final Path pluginDirectory) throws IOException {
+        final Path serverDirectory, final Path pluginDirectory)
+        throws IOException, org.bukkit.configuration.InvalidConfigurationException {
         final SalmonRuntime runtime = new SalmonRuntime(server, configuration, serverDirectory, pluginDirectory);
         instance = runtime;
         SalmonAPIImpl.install(runtime);
@@ -192,6 +197,36 @@ public final class SalmonRuntime implements AutoCloseable {
 
     public static SalmonRuntime getInstance() {
         return instance;
+    }
+
+    public static Component renderMotd(final Component fallback, final int onlinePlayers, final int maxPlayers) {
+        final SalmonRuntime runtime = instance;
+        return runtime == null ? fallback : runtime.motdManager.render(onlinePlayers, maxPlayers);
+    }
+
+    public static void checkMaintenanceLogin(final AsyncPlayerPreLoginEvent event) {
+        final SalmonRuntime runtime = instance;
+        if (runtime != null && !runtime.motdManager.allowsLogin(event.getName(), event.getUniqueId())) {
+            event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST);
+            event.kickMessage(maintenanceKickMessage());
+        }
+    }
+
+    public static boolean allowsMaintenanceLogin(final String playerName, final UUID playerId) {
+        final SalmonRuntime runtime = instance;
+        return runtime == null || runtime.motdManager.allowsLogin(playerName, playerId);
+    }
+
+    public static Component maintenanceKickMessage() {
+        return Component.text("This server is in maintenance mode.");
+    }
+
+    public SalmonMotdManager motdManager() {
+        return this.motdManager;
+    }
+
+    public Component motd(final int onlinePlayers, final int maxPlayers) {
+        return this.motdManager.render(onlinePlayers, maxPlayers);
     }
 
     public boolean isEnabled() {

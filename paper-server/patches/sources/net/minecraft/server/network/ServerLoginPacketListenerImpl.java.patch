@@ -213,7 +213,7 @@
                  }
              }
  
-@@ -225,18 +_,123 @@
+@@ -225,18 +_,128 @@
                      ? ((InetSocketAddress)remoteAddress).getAddress()
                      : null;
              }
@@ -248,6 +248,7 @@
 +        gameprofile = com.destroystokyo.paper.profile.CraftPlayerProfile.asAuthlibCopy(profile);
 +        playerName = gameprofile.name();
 +        uniqueId = gameprofile.id();
++        dev.firesmasher.salmon.SalmonRuntime.checkMaintenanceLogin(asyncEvent); // Salmon - enforce maintenance whitelist
 +        // Paper end - Add more fields to AsyncPlayerPreLoginEvent
 +
 +        if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
@@ -266,10 +267,14 @@
 +            ServerLoginPacketListenerImpl.this.server.processQueue.add(waitable);
 +            if (waitable.get() != PlayerPreLoginEvent.Result.ALLOWED) {
 +                this.disconnect(io.papermc.paper.adventure.PaperAdventure.asVanilla(event.kickMessage())); // Paper - Adventure
++            } else if (!dev.firesmasher.salmon.SalmonRuntime.allowsMaintenanceLogin(playerName, uniqueId)) { // Salmon - enforce maintenance whitelist
++                this.disconnect(io.papermc.paper.adventure.PaperAdventure.asVanilla(dev.firesmasher.salmon.SalmonRuntime.maintenanceKickMessage()));
 +            }
 +        } else {
 +            if (asyncEvent.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) {
 +                this.disconnect(io.papermc.paper.adventure.PaperAdventure.asVanilla(asyncEvent.kickMessage())); // Paper - Adventure
++            } else if (!dev.firesmasher.salmon.SalmonRuntime.allowsMaintenanceLogin(playerName, uniqueId)) { // Salmon - enforce maintenance whitelist
++                this.disconnect(io.papermc.paper.adventure.PaperAdventure.asVanilla(dev.firesmasher.salmon.SalmonRuntime.maintenanceKickMessage()));
 +            }
 +        }
 +        return gameprofile; // Paper - Add more fields to AsyncPlayerPreLoginEvent

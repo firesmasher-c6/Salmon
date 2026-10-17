@@ -44,6 +44,8 @@ configuration, optimization controls, diagnostics, and startup scripts.
   changes. Scripts run with console authority; treat them like executable
   server configuration.
 - **The `/salmon` command** for status and script reload operations.
+- **MOTD Builder and `/smp`** for configurable server-list messages and
+  maintenance mode with a dedicated name/UUID allowlist.
 
 Salmon does not promise that every third-party plugin is bug-free or compatible.
 Test plugin updates and configuration changes on a copy of your server before
@@ -64,12 +66,12 @@ in `paper-server/build/libs/`.
 4. Start the server again and tune Salmon in `salmon.yml` and
    `config/salmon-opts.yml`.
 
-Salmon's current version is **Minecraft `1.21.11`, build `2e-001`**. Rename the
-runnable server bundle to `salmon-1.21.11-2e-001.jar` and start it from your
+Salmon's current version is **Minecraft `1.21.11`, build `3e-002`**. Rename the
+runnable server bundle to `salmon-1.21.11-3e-002.jar` and start it from your
 server directory:
 
 ```sh
-java -Xms1G -Xmx4G -jar salmon-1.21.11-2e-001.jar --nogui
+java -Xms1G -Xmx4G -jar salmon-1.21.11-3e-002.jar --nogui
 ```
 
 Keep the server JAR, world, and configuration files in the same server
@@ -82,7 +84,7 @@ Salmon creates these files in the server directory when they are missing:
 
 | File | Purpose |
 | --- | --- |
-| `salmon.yml` | Master Salmon enable/disable switch |
+| `salmon.yml` | Master switch, MOTD templates, and maintenance allowlist |
 | `config/salmon-opts.yml` | Active optimization and plugin-metric settings |
 | `config/salmon-defaults.yml` | Reference/default values for optimization settings |
 | `salmon-scripts/` | Trusted `.slms` scripts and their README |
@@ -124,6 +126,25 @@ Modrinth commands can be disabled with `plugins.modrinth.enabled: false`.
 Chunky preparation runs its network and file operations on a dedicated worker
 before Paper's plugin discovery; startup waits for completion so Paper does not
 race an unfinished plugin download.
+
+### MOTD Builder and SMP maintenance
+
+Configure `motd.lines` and `motd.maintenance-lines` in `salmon.yml`; these
+templates override `server.properties`, support `&` color codes, and replace
+`{online}` and `{max}`. Apply edits without restarting with `/smp motd reload`.
+When maintenance mode is enabled, the maintenance MOTD is shown and only players
+in the dedicated maintenance allowlist can join. This allowlist is separate
+from Minecraft's regular whitelist; add staff before turning maintenance on.
+
+```text
+/smp
+/smp maintenance on
+/smp maintenance off
+/smp maintenance whitelist add <uuid|playername>
+/smp maintenance whitelist rm <uuid|playername>
+/smp maintenance whitelist list
+/smp motd reload
+```
 
 ### SalmonAPI
 
@@ -219,10 +240,10 @@ release filename before distributing or running it:
 
 ```sh
 mv paper-server/build/libs/paper-bundler-1.21.11-R0.1-SNAPSHOT-mojmap.jar \
-  paper-server/build/libs/salmon-1.21.11-2e-001.jar
+  paper-server/build/libs/salmon-1.21.11-3e-002.jar
 ```
 
-The release identity is **Minecraft `1.21.11`, build `2e-001`**. Keep the
+The release identity is **Minecraft `1.21.11`, build `3e-002`**. Keep the
 filename consistent in your release notes and server launch command.
 The plain `Salmon-*.jar` output is not the bundled server distribution; rename
 and use the `paper-bundler-*-mojmap.jar` artifact. Building the project does
