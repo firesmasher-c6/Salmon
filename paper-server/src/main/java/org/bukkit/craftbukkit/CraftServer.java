@@ -627,8 +627,12 @@ public final class CraftServer implements Server {
         if (this.pluginManager.getPermission("salmon.command") == null) {
             this.pluginManager.addPermission(new Permission("salmon.command", org.bukkit.permissions.PermissionDefault.OP));
         }
-        this.commandMap.register("salmon", "Salmon", new SalmonCommand(this.salmonRuntime));
-        this.commandMap.register("salmon", "Salmon", new SalmonSmpCommand(this.salmonRuntime));
+        if (!this.commandMap.register("salmon", "Salmon", new SalmonCommand(this.salmonRuntime))) {
+            this.getLogger().severe("Could not register /salmon because another command already owns that label.");
+        }
+        if (!this.commandMap.register("salmon", "Salmon", new SalmonSmpCommand(this.salmonRuntime))) {
+            this.getLogger().severe("Could not register /smp because another command already owns that label.");
+        }
     }
 
     public void disablePlugins() {
@@ -1046,7 +1050,6 @@ public final class CraftServer implements Server {
         this.reloadData();
         org.spigotmc.SpigotConfig.registerCommands(); // Spigot
         io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
-        this.registerSalmonCommands();
         this.spark.registerCommandBeforePlugins(this); // Paper - spark
         this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
         this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
@@ -1081,6 +1084,8 @@ public final class CraftServer implements Server {
         // Paper start - brigadier command API
         io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setValid(); // to clear invalid state for event fire below
         io.papermc.paper.plugin.lifecycle.event.LifecycleEventRunner.INSTANCE.callReloadableRegistrarEvent(io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents.COMMANDS, io.papermc.paper.command.brigadier.PaperCommands.INSTANCE, org.bukkit.plugin.Plugin.class, io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent.Cause.RELOAD); // call commands event for regular plugins
+        this.commandMap.registerServerAliases();
+        this.registerSalmonCommands();
         this.helpMap.initializeCommands();
         this.syncCommands(); // Refresh commands after event
         // Paper end - brigadier command API

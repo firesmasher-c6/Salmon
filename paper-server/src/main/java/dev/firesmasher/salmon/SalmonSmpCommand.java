@@ -1,6 +1,8 @@
 package dev.firesmasher.salmon;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -12,6 +14,9 @@ import static net.kyori.adventure.text.Component.text;
 
 public final class SalmonSmpCommand extends Command {
     private static final Logger LOGGER = Logger.getLogger("Salmon");
+    private static final List<String> ROOT_ARGUMENTS = List.of("maintenance", "motd");
+    private static final List<String> MAINTENANCE_ARGUMENTS = List.of("on", "off", "whitelist");
+    private static final List<String> WHITELIST_ARGUMENTS = List.of("add", "rm", "remove", "list");
     private final SalmonRuntime runtime;
 
     public SalmonSmpCommand(final SalmonRuntime runtime) {
@@ -85,6 +90,35 @@ public final class SalmonSmpCommand extends Command {
         }
         sender.sendMessage(text("Usage: " + this.usageMessage, NamedTextColor.RED));
         return true;
+    }
+
+    @Override
+    public List<String> tabComplete(final CommandSender sender, final String alias, final String[] args) {
+        if (args.length == 1) {
+            return matching(ROOT_ARGUMENTS, args[0]);
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("maintenance")) {
+            return matching(MAINTENANCE_ARGUMENTS, args[1]);
+        }
+        if (args.length == 3 && args[0].equalsIgnoreCase("maintenance")
+            && args[1].equalsIgnoreCase("whitelist")) {
+            return matching(WHITELIST_ARGUMENTS, args[2]);
+        }
+        if (args.length == 4 && args[0].equalsIgnoreCase("maintenance")
+            && args[1].equalsIgnoreCase("whitelist")
+            && (args[2].equalsIgnoreCase("add") || args[2].equalsIgnoreCase("rm")
+                || args[2].equalsIgnoreCase("remove"))) {
+            return super.tabComplete(sender, alias, args);
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("motd")) {
+            return matching(List.of("reload"), args[1]);
+        }
+        return List.of();
+    }
+
+    private static List<String> matching(final List<String> candidates, final String input) {
+        final String prefix = input.toLowerCase(Locale.ROOT);
+        return candidates.stream().filter(candidate -> candidate.startsWith(prefix)).toList();
     }
 
     private boolean setMaintenance(final CommandSender sender, final boolean enabled) {

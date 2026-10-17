@@ -6,6 +6,6 @@ import dev.firesmasher.salmon.modifiers.SalmonScriptParserTest;
 import io.papermc.paper.plugin.provider.type.PluginFileTypeTest;
 
 @Suite
-@SelectClasses({SalmonConfigurationTest.class, SalmonScriptParserTest.class, PluginFileTypeTest.class})
+@SelectClasses({SalmonConfigurationTest.class, SalmonCommandCompletionTest.class, SalmonScriptParserTest.class, PluginFileTypeTest.class})
 public class SalmonConfigurationTestSuite {
 }

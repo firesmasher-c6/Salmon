@@ -4,6 +4,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,6 +13,7 @@ import static net.kyori.adventure.text.Component.text;
 
 public final class SalmonCommand extends Command {
     private static final Logger LOGGER = Logger.getLogger("Salmon");
+    private static final List<String> ROOT_ARGUMENTS = List.of("status", "scripts", "modrinth");
     private final SalmonRuntime runtime;
 
     public SalmonCommand(final SalmonRuntime runtime) {
@@ -85,6 +88,25 @@ public final class SalmonCommand extends Command {
 
         sender.sendMessage(text("Usage: " + this.usageMessage, NamedTextColor.RED));
         return true;
+    }
+
+    @Override
+    public List<String> tabComplete(final CommandSender sender, final String alias, final String[] args) {
+        if (args.length == 1) {
+            return matching(ROOT_ARGUMENTS, args[0]);
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("scripts")) {
+            return matching(List.of("reload"), args[1]);
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("modrinth")) {
+            return matching(List.of("search", "install"), args[1]);
+        }
+        return List.of();
+    }
+
+    private static List<String> matching(final List<String> candidates, final String input) {
+        final String prefix = input.toLowerCase(Locale.ROOT);
+        return candidates.stream().filter(candidate -> candidate.startsWith(prefix)).toList();
     }
 
     private void reportModrinthFailure(final CommandSender sender, final String action, final Exception exception) {

@@ -1,16 +1,19 @@
-# Salmon 1.21.11 - 5e-004
+# Salmon 1.21.11 - 6e-005
 
-Salmon `5e-004` fixes built-in command registration during normal server
-startup. `/salmon` and `/smp` are now registered after Paper initializes the
-command dispatcher, and remain available after a server reload.
+Salmon `6e-005` fixes built-in command registration after plugin command
+lifecycles and server aliases are initialized. `/salmon` and `/smp` are
+available on startup and after reload, with tab completion for their
+subcommands.
 
 ## Download
 
-Download `salmon-1.21.11-5e-004.jar` from this GitHub release.
+Download `salmon-1.21.11-6e-005.jar` from this GitHub release.
 
 ## Highlights
 
-- Fixes missing `/salmon` and `/smp` commands on initial startup.
+- Registers `/salmon` and `/smp` after plugin lifecycle commands and aliases,
+  then refreshes online players' command trees.
+- Adds tab completion for the supported `/salmon` and `/smp` subcommands.
 - `/salmon` exposes Salmon status, scripts, and Modrinth plugin services.
 - `/smp` manages MOTD reload and maintenance mode / allowlisting.
 - Redstone Optimization defaults to Paper's Alternate Current engine, which
@@ -29,13 +32,13 @@ Download `salmon-1.21.11-5e-004.jar` from this GitHub release.
 ## Install and start
 
 1. Install Java 21 or later.
-2. Put `salmon-1.21.11-5e-004.jar` in an empty server directory.
+2. Put `salmon-1.21.11-6e-005.jar` in an empty server directory.
 3. Start the server once to create its configuration files.
 4. Review `salmon.yml` and `config/salmon-opts.yml`, accept the Minecraft EULA
    in `eula.txt`, then restart.
 
    ```sh
-   java -Xms1G -Xmx4G -jar salmon-1.21.11-5e-004.jar --nogui
+   java -Xms1G -Xmx4G -jar salmon-1.21.11-6e-005.jar --nogui
    ```
 
 You can confirm command registration at the server console with `salmon` or
