@@ -4,7 +4,7 @@ Documentation-only branch. This branch never contains server source code.
 
 ## Links to branches
 - `ver/1.21.11` — main development line (contains code).
-- `release/3r-009` — stable 3r-009 release line.
+- `release/1.21.11-3r-009` — stable 3r-009 release line (unsupported).
 - `main` — not used (repository default is `ver/1.21.11`).
 
 ## Releases / tags
@@ -13,3 +13,7 @@ Documentation-only branch. This branch never contains server source code.
 
 ## Commit history
 See `COMMIT_HISTORY.md` for every commit hash, author date, and subject across all refs.
+
+## Unsupported branches
+
+- `release/1.21.11-3r-009` (and earlier 1.21.11 builds) are **unsupported**: they will no longer receive dev support, fixes, new versions, or further updates.
