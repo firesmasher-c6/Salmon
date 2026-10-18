@@ -91,7 +91,15 @@ public final class SalmonVersionFetcher implements VersionFetcher {
         final ServerBuildInfo buildInfo = ServerBuildInfo.buildInfo();
         final String fullVersion = buildInfo.asString(ServerBuildInfo.StringRepresentation.VERSION_SIMPLE);
         final String versionPrefix = buildInfo.minecraftVersionId() + "-";
-        return fullVersion.startsWith(versionPrefix) ? fullVersion.substring(versionPrefix.length()) : "";
+        String build = fullVersion.startsWith(versionPrefix) ? fullVersion.substring(versionPrefix.length()) : fullVersion;
+        // Local development builds append a Git commit hash (for example
+        // 8e-009-abc1234). Strip that suffix so a locally-built release build
+        // is still recognized as the corresponding Salmon release.
+        final java.util.regex.Matcher buildMatcher = Pattern.compile("^(\\d+[a-z]-\\d+)", Pattern.CASE_INSENSITIVE).matcher(build);
+        if (buildMatcher.find()) {
+            build = buildMatcher.group(1);
+        }
+        return build;
     }
 
     static Component updateMessage(final String currentBuild, final String latestRelease) {
