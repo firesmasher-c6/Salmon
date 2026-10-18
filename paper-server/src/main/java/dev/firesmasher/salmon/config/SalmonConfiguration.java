@@ -68,6 +68,9 @@ public record SalmonConfiguration(boolean enabled, Options options) {
         int performanceMiscTrackingRange,
         int performanceDisplayTrackingRange,
         int performanceOtherTrackingRange,
+        boolean performanceCollisionsEnabled,
+        int performanceMaxEntityCollisions,
+        boolean performanceOnlyPlayersCollide,
         RedstoneImplementation redstoneImplementation
     ) {
     }
@@ -153,6 +156,9 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             optimizationActivationRange(options, "performance.tracking-ranges.misc"),
             optimizationActivationRange(options, "performance.tracking-ranges.display"),
             optimizationActivationRange(options, "performance.tracking-ranges.other"),
+            options.getBoolean("performance.collisions.enabled"),
+            optimizationActivationRange(options, "performance.collisions.max-entity-collisions"),
+            options.getBoolean("performance.collisions.only-players-collide"),
             redstoneImplementation(options.getString("redstone.implementation", "alternate_current"))
         );
         return new SalmonConfiguration(main.getBoolean("salmon.enabled", true), parsedOptions);

@@ -247,3 +247,7 @@ performance:
     misc: -1
     display: -1
     other: -1
+  collisions:
+    enabled: false
+    max-entity-collisions: -1
+    only-players-collide: false

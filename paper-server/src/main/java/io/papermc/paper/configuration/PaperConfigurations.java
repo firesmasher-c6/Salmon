@@ -325,6 +325,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
             this.applySalmonRedstoneConfiguration(worldConfiguration);
             this.applySalmonActivationRanges(contextMap);
             this.applySalmonTrackingRanges(contextMap);
+            this.applySalmonCollisions(worldConfiguration);
             return worldConfiguration;
         } catch (IOException exception) {
             throw new RuntimeException("Could not create world config for " + levelKey, exception);
@@ -358,6 +359,17 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         if (salmon.options().performanceMiscTrackingRange() >= 0) spigot.miscTrackingRange = salmon.options().performanceMiscTrackingRange();
         if (salmon.options().performanceDisplayTrackingRange() >= 0) spigot.displayTrackingRange = salmon.options().performanceDisplayTrackingRange();
         if (salmon.options().performanceOtherTrackingRange() >= 0) spigot.otherTrackingRange = salmon.options().performanceOtherTrackingRange();
+    }
+
+    private void applySalmonCollisions(final WorldConfiguration worldConfiguration) {
+        final SalmonConfiguration salmon = this.salmonConfiguration();
+        if (!salmon.enabled() || !salmon.options().performanceCollisionsEnabled()) {
+            return;
+        }
+        if (salmon.options().performanceMaxEntityCollisions() >= 0) {
+            worldConfiguration.collisions.maxEntityCollisions = salmon.options().performanceMaxEntityCollisions();
+        }
+        worldConfiguration.collisions.onlyPlayersCollide = salmon.options().performanceOnlyPlayersCollide();
     }
 
     private synchronized SalmonConfiguration salmonConfiguration() {
@@ -420,6 +432,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
                 this.applySalmonRedstoneConfiguration(worldConfiguration);
                 this.applySalmonActivationRanges(contextMap);
                 this.applySalmonTrackingRanges(contextMap);
+                this.applySalmonCollisions(worldConfiguration);
             }
         } catch (Exception ex) {
             throw new RuntimeException("Could not reload paper configuration files", ex);
