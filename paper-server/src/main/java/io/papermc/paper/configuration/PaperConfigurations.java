@@ -373,7 +373,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         }
     }
 
-    private static List<Definition<? extends Annotation, ?, ? extends FieldProcessor.Factory<?, ?>>> defaultFieldProcessors() {
+    private static List<Definition<?, ?, ? extends FieldProcessor.Factory<?, ?>>> defaultFieldProcessors() {
         return List.of(
             MergeMap.DEFINITION
         );

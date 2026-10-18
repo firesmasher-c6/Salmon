@@ -1,6 +1,7 @@
 package dev.firesmasher.salmon;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,6 +67,20 @@ public record SalmonConfiguration(boolean enabled, Options options) {
         final FileConfiguration main = loadFile(mainPath);
         final FileConfiguration defaults = loadFile(defaultsPath);
         final FileConfiguration options = loadFile(optionsPath);
+
+        final FileConfiguration defaultMain = loadResource("salmon.yml");
+        final FileConfiguration defaultOptions = defaults;
+
+        // Self-heal: merge any keys present in the shipped defaults but missing from
+        // an operator's existing configuration file. Existing values are never
+        // overwritten, so upgrades add new knobs without clobbering customization.
+        if (mergeMissing(main, defaultMain)) {
+            main.save(mainPath.toFile());
+        }
+        if (mergeMissing(options, defaultOptions)) {
+            options.save(optionsPath.toFile());
+        }
+
         options.setDefaults(defaults);
         options.options().copyDefaults(true);
 
@@ -139,6 +154,37 @@ public record SalmonConfiguration(boolean enabled, Options options) {
                 "Salmon setting 'redstone.implementation' must be paper, vanilla, eigencraft, or alternate_current"
             );
         };
+    }
+
+
+    private static FileConfiguration loadResource(final String fileName) throws IOException, InvalidConfigurationException {
+        try (InputStream input = SalmonConfiguration.class.getClassLoader().getResourceAsStream(RESOURCE_DIRECTORY + fileName)) {
+            if (input == null) {
+                throw new IOException("Missing Salmon default resource: " + RESOURCE_DIRECTORY + fileName);
+            }
+            final YamlConfiguration configuration = new YamlConfiguration();
+            configuration.load(new InputStreamReader(input, java.nio.charset.StandardCharsets.UTF_8));
+            return configuration;
+        }
+    }
+
+    private static boolean mergeMissing(final org.bukkit.configuration.ConfigurationSection target, final org.bukkit.configuration.ConfigurationSection defaults) {
+        boolean changed = false;
+        for (final String key : defaults.getKeys(false)) {
+            if (defaults.isConfigurationSection(key)) {
+                if (!target.isConfigurationSection(key)) {
+                    target.createSection(key);
+                    changed = true;
+                }
+                if (mergeMissing(target.getConfigurationSection(key), defaults.getConfigurationSection(key))) {
+                    changed = true;
+                }
+            } else if (!target.getKeys(false).contains(key)) {
+                target.set(key, defaults.get(key));
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     private static FileConfiguration loadFile(final Path path) throws IOException, InvalidConfigurationException {
