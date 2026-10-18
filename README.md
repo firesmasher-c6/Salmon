@@ -5,15 +5,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/firesmasher-c6/Salmon/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/firesmasher-c6/Salmon/build.yml?branch=ver%2F1.21.11&label=build" alt="Build status"></a>
+  <a href="https://github.com/firesmasher-c6/Salmon/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/firesmasher-c6/Salmon/build.yml?branch=dev%2F26.2&label=build" alt="Build status"></a>
   <a href="https://github.com/firesmasher-c6/Salmon/releases/latest"><img src="https://img.shields.io/github/v/release/firesmasher-c6/Salmon?label=latest%20release" alt="Latest Salmon release"></a>
   <a href="https://github.com/firesmasher-c6/Salmon"><img src="https://img.shields.io/github/license/firesmasher-c6/Salmon?label=license" alt="GPLv3 license"></a>
   <img src="https://img.shields.io/badge/Minecraft-1.21.11-3C8527?logo=minecraft&logoColor=white" alt="Minecraft 26.2 (dev)">
-  <img src="https://img.shields.io/badge/Java-21+-ED8B00?logo=openjdk&logoColor=white" alt="Java 21 or later">
+  <img src="https://img.shields.io/badge/Java-21+-ED8B00?logo=openjdk&logoColor=white" alt="Java 25 or later">
 </p>
 
-**Salmon 3r-009 is the second stable Salmon release.** Salmon is a
-Minecraft Java server based on Paper. It keeps the Paper-compatible server and
+**Salmon `26.2-1e-000` is the development line based on Paper 26.2.** Salmon keeps its Paper-compatible server foundation while moving performance and packaging work onto the newer Paper base. It keeps the Paper-compatible server and
 plugin foundation while adding Salmon-branded configuration, optimization
 controls, diagnostics, and a plugin API.
 
@@ -64,7 +63,7 @@ Use a Salmon server bundle from a trusted Salmon release or build one from this
 repository. The distributable produced by the build is a Paperclip-style bundle
 in `paper-server/build/libs/`.
 
-1. Install a **Java 21 or later** runtime.
+1. Install a **Java 25 or later** runtime.
 2. Place the bundled server JAR in its own server directory.
 3. Start it, review the generated files, and set `eula=true` in `eula.txt`
    after accepting the [Minecraft EULA](https://www.minecraft.net/eula).
@@ -225,7 +224,7 @@ the plugin is listed under **Salmon Plugins**.
 ### Requirements
 
 - Git
-- Java 21 or later
+- Java 25 or later
 - An internet connection for Gradle and Minecraft build dependencies
 
 ### Build the server bundle
