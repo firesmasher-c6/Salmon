@@ -74,15 +74,10 @@ public class CraftTask implements BukkitTask, Runnable { // Spigot
 
     @Override
     public void run() {
-        final long startedAt = dev.firesmasher.salmon.SalmonRuntime.beginPluginTaskTiming();
-        try {
-            if (this.rTask != null) {
-                this.rTask.run();
-            } else {
-                this.cTask.accept(this);
-            }
-        } finally {
-            dev.firesmasher.salmon.SalmonRuntime.finishPluginTaskTiming(this.plugin, startedAt);
+        if (this.rTask != null) {
+            this.rTask.run();
+        } else {
+            this.cTask.accept(this);
         }
     }
 

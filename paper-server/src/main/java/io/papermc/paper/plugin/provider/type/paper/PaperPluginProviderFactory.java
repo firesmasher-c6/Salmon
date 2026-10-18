@@ -21,15 +21,6 @@ import java.util.logging.Logger;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 
 class PaperPluginProviderFactory implements PluginTypeFactory<PaperPluginParent, PaperPluginMeta> {
-    private final boolean salmonPlugin;
-
-    PaperPluginProviderFactory() {
-        this(false);
-    }
-
-    PaperPluginProviderFactory(final boolean salmonPlugin) {
-        this.salmonPlugin = salmonPlugin;
-    }
 
     @Override
     public PaperPluginParent build(JarFile file, PaperPluginMeta configuration, Path source) {
@@ -51,7 +42,7 @@ class PaperPluginProviderFactory implements PluginTypeFactory<PaperPluginParent,
         }
 
         PaperPluginClassLoader classLoader = builder.buildClassLoader(jul, source, file, configuration);
-        return new PaperPluginParent(source, file, configuration, classLoader, context, this.salmonPlugin);
+        return new PaperPluginParent(source, file, configuration, classLoader, context);
     }
 
     @Override

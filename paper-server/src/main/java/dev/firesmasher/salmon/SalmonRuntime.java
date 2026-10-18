@@ -32,7 +32,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.craftbukkit.CraftServer;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -153,7 +153,7 @@ public final class SalmonRuntime implements AutoCloseable {
         final int maxWater = options.maxWaterEntitiesPerChunk();
         final int maxAmbient = options.maxAmbientEntitiesPerChunk();
         final MobCategory category = entity.getType().getCategory();
-        final boolean isTnt = entity.getType() == EntityType.TNT;
+        final boolean isTnt = entity.getType() == EntityTypes.TNT;
         final boolean isHostile = category == MobCategory.MONSTER;
         final boolean isPassive = category == MobCategory.CREATURE;
         final boolean isWater = isWaterCategory(category);
@@ -177,7 +177,7 @@ public final class SalmonRuntime implements AutoCloseable {
         int waterCount = 0;
         int ambientCount = 0;
         for (net.minecraft.world.entity.Entity existing : world.getEntities(entity, chunkBounds)) {
-            if (maxTnt > 0 && isTnt && existing.getType() == EntityType.TNT) {
+            if (maxTnt > 0 && isTnt && existing.getType() == EntityTypes.TNT) {
                 tntCount++;
             }
             final MobCategory existingCategory = existing.getType().getCategory();
