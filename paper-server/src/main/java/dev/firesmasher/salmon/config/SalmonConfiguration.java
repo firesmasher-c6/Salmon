@@ -49,6 +49,14 @@ public record SalmonConfiguration(boolean enabled, Options options) {
         long pluginSlowCallWarningMillis,
         boolean chunkyPregenerationEnabled,
         boolean modrinthServicesEnabled,
+        boolean performanceActivationRangesEnabled,
+        int performanceAnimalActivationRange,
+        int performanceMonsterActivationRange,
+        int performanceRaiderActivationRange,
+        int performanceMiscActivationRange,
+        int performanceFlyingMonsterActivationRange,
+        int performanceWaterActivationRange,
+        int performanceVillagerActivationRange,
         RedstoneImplementation redstoneImplementation
     ) {
     }
@@ -115,6 +123,14 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             nonNegativeLong(options, "plugins.metrics.slow-call-warning-ms"),
             options.getBoolean("plugins.chunky-pregeneration.enabled"),
             options.getBoolean("plugins.modrinth.enabled"),
+            options.getBoolean("performance.activation-ranges.enabled"),
+            optimizationActivationRange(options, "performance.activation-ranges.animals"),
+            optimizationActivationRange(options, "performance.activation-ranges.monsters"),
+            optimizationActivationRange(options, "performance.activation-ranges.raiders"),
+            optimizationActivationRange(options, "performance.activation-ranges.misc"),
+            optimizationActivationRange(options, "performance.activation-ranges.flying-monsters"),
+            optimizationActivationRange(options, "performance.activation-ranges.water"),
+            optimizationActivationRange(options, "performance.activation-ranges.villagers"),
             redstoneImplementation(options.getString("redstone.implementation", "alternate_current"))
         );
         return new SalmonConfiguration(main.getBoolean("salmon.enabled", true), parsedOptions);
@@ -185,6 +201,15 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             }
         }
         return changed;
+    }
+
+
+    private static int optimizationActivationRange(final FileConfiguration options, final String path) {
+        final int value = options.getInt(path, -1);
+        if (value < -1) {
+            throw new IllegalArgumentException("Salmon setting '" + path + "' must be -1 or greater");
+        }
+        return value;
     }
 
     private static FileConfiguration loadFile(final Path path) throws IOException, InvalidConfigurationException {

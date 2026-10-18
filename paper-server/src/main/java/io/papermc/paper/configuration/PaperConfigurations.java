@@ -322,10 +322,26 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         try {
             final WorldConfiguration worldConfiguration = super.createWorldConfig(contextMap);
             this.applySalmonRedstoneConfiguration(worldConfiguration);
+            this.applySalmonActivationRanges(contextMap);
             return worldConfiguration;
         } catch (IOException exception) {
             throw new RuntimeException("Could not create world config for " + levelKey, exception);
         }
+    }
+
+    private void applySalmonActivationRanges(final ContextMap contextMap) {
+        final SalmonConfiguration salmon = this.salmonConfiguration();
+        if (!salmon.enabled() || !salmon.options().performanceActivationRangesEnabled()) {
+            return;
+        }
+        final SpigotWorldConfig spigot = contextMap.require(PaperConfigurations.SPIGOT_WORLD_CONFIG_CONTEXT_KEY).get();
+        if (salmon.options().performanceAnimalActivationRange() >= 0) spigot.animalActivationRange = salmon.options().performanceAnimalActivationRange();
+        if (salmon.options().performanceMonsterActivationRange() >= 0) spigot.monsterActivationRange = salmon.options().performanceMonsterActivationRange();
+        if (salmon.options().performanceRaiderActivationRange() >= 0) spigot.raiderActivationRange = salmon.options().performanceRaiderActivationRange();
+        if (salmon.options().performanceMiscActivationRange() >= 0) spigot.miscActivationRange = salmon.options().performanceMiscActivationRange();
+        if (salmon.options().performanceFlyingMonsterActivationRange() >= 0) spigot.flyingMonsterActivationRange = salmon.options().performanceFlyingMonsterActivationRange();
+        if (salmon.options().performanceWaterActivationRange() >= 0) spigot.waterActivationRange = salmon.options().performanceWaterActivationRange();
+        if (salmon.options().performanceVillagerActivationRange() >= 0) spigot.villagerActivationRange = salmon.options().performanceVillagerActivationRange();
     }
 
     private synchronized SalmonConfiguration salmonConfiguration() {
@@ -363,11 +379,13 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
             this.initializeGlobalConfiguration(server.registryAccess(), reloader(this.globalConfigClass, GlobalConfiguration.get()));
             this.initializeWorldDefaultsConfiguration(server.registryAccess());
             for (ServerLevel level : server.getAllLevels()) {
+                final ContextMap contextMap = createWorldContextMap(level);
                 final WorldConfiguration worldConfiguration = this.createWorldConfig(
-                    createWorldContextMap(level),
+                    contextMap,
                     reloader(this.worldConfigClass, level.paperConfig())
                 );
                 this.applySalmonRedstoneConfiguration(worldConfiguration);
+                this.applySalmonActivationRanges(contextMap);
             }
         } catch (Exception ex) {
             throw new RuntimeException("Could not reload paper configuration files", ex);

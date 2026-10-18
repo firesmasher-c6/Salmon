@@ -132,3 +132,17 @@ villagers:
     near-radius: 32   # full rate within this distance
     far-radius: 96    # minimum rate beyond this distance
     minimum-tick-rate: 4
+
+  # Opt-in activation-range overrides. -1 keeps Paper defaults. Lower values
+  # reduce AI work for far-away inactive entities; -1 leaves behavior vanilla.
+  # SAFETY: lowering activation can delay mob farm spawning and break
+  # delayed-mechanic tests if set too aggressively. Apply after testing.
+  activation-ranges:
+    enabled: false
+    animals: -1
+    monsters: -1
+    raiders: -1
+    misc: -1
+    flying-monsters: -1
+    water: -1
+    villagers: -1
