@@ -261,6 +261,11 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
 
+import dev.firesmasher.salmon.SalmonConfiguration;
+import dev.firesmasher.salmon.SalmonCommand;
+import dev.firesmasher.salmon.SalmonRuntime;
+import dev.firesmasher.salmon.SalmonSmpCommand;
+
 public final class CraftServer implements Server {
     private final String serverName = io.papermc.paper.ServerBuildInfo.buildInfo().brandName();
     private final String serverVersion;
@@ -303,6 +308,7 @@ public final class CraftServer implements Server {
     private final io.papermc.paper.logging.SysoutCatcher sysoutCatcher = new io.papermc.paper.logging.SysoutCatcher();
     private final io.papermc.paper.potion.PaperPotionBrewer potionBrewer;
     public final io.papermc.paper.SparksFly spark;
+    public final SalmonRuntime salmonRuntime;
     private final ServerConfiguration serverConfig = new PaperServerConfiguration();
 
     // Paper start - Folia region threading API
@@ -479,6 +485,28 @@ public final class CraftServer implements Server {
         this.potionBrewer = new io.papermc.paper.potion.PaperPotionBrewer(console); // Paper - custom potion mixes
         datapackManager = new io.papermc.paper.datapack.PaperDatapackManager(console.getPackRepository()); // Paper
         this.spark = new io.papermc.paper.SparksFly(this); // Paper - spark
+        final Path salmonServerDirectory = Path.of(".").toAbsolutePath().normalize();
+        try {
+            this.salmonRuntime = SalmonRuntime.start(this,
+                SalmonConfiguration.load(salmonServerDirectory),
+                salmonServerDirectory,
+                io.papermc.paper.plugin.PluginInitializerManager.instance().pluginDirectoryPath());
+        } catch (IOException | org.bukkit.configuration.InvalidConfigurationException | IllegalArgumentException ex) {
+            this.logger.log(Level.SEVERE, "Failed to load Salmon configuration; server startup cannot continue", ex);
+            throw new IllegalStateException("Failed to load Salmon configuration", ex);
+        }
+    }
+
+    public void registerSalmonCommands() {
+        if (this.pluginManager.getPermission("salmon.command") == null) {
+            this.pluginManager.addPermission(new org.bukkit.permissions.Permission("salmon.command", org.bukkit.permissions.PermissionDefault.OP));
+        }
+        if (!this.commandMap.register("Salmon", new SalmonCommand(this.salmonRuntime))) {
+            this.getLogger().severe("Could not register /salmon because another command already owns that label.");
+        }
+        if (!this.commandMap.register("Salmon", new SalmonSmpCommand(this.salmonRuntime))) {
+            this.getLogger().severe("Could not register /smp because another command already owns that label.");
+        }
     }
 
     public boolean getCommandBlockOverride(String command) {
@@ -1049,6 +1077,8 @@ public final class CraftServer implements Server {
         // Paper start - brigadier command API
         io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setValid(); // to clear invalid state for event fire below
         io.papermc.paper.plugin.lifecycle.event.LifecycleEventRunner.INSTANCE.callReloadableRegistrarEvent(io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents.COMMANDS, io.papermc.paper.command.brigadier.PaperCommands.INSTANCE, org.bukkit.plugin.Plugin.class, io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent.Cause.RELOAD); // call commands event for regular plugins
+        this.commandMap.registerServerAliases();
+        this.registerSalmonCommands();
         this.helpMap.initializeCommands();
         this.syncCommands(); // Refresh commands after event
         // Paper end - brigadier command API
@@ -1886,7 +1916,12 @@ public final class CraftServer implements Server {
 
     @Override
     public void shutdown() {
+        this.salmonRuntime.close();
         this.console.halt(false);
+    }
+
+    public void closeSalmonRuntime() {
+        this.salmonRuntime.close();
     }
 
     @Override
@@ -2312,7 +2347,7 @@ public final class CraftServer implements Server {
 
     @Override
     public net.kyori.adventure.text.Component motd() {
-        return this.console.motd();
+        return this.salmonRuntime.motd(this.getOnlinePlayers().size(), this.getMaxPlayers());
     }
 
     @Override
