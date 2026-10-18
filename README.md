@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/Java-21+-ED8B00?logo=openjdk&logoColor=white" alt="Java 25 or later">
 </p>
 
-**Salmon `26.2-1e-000` is the development line based on Paper 26.2.** Salmon keeps its Paper-compatible server foundation while moving performance and packaging work onto the newer Paper base. It keeps the Paper-compatible server and
+**Salmon `26.2-2e-001` is the development line based on Paper 26.2.** Salmon keeps its Paper-compatible server foundation while moving performance and packaging work onto the newer Paper base. It keeps the Paper-compatible server and
 plugin foundation while adding Salmon-branded configuration, optimization
 controls, diagnostics, and a plugin API.
 
@@ -288,6 +288,6 @@ project details.
 ## Development status (26.2)
 
 - `dev/26.2` is the active development line for Paper 26.2-based Salmon builds.
-- Version label for this line: `26.2-1e-000` (development, not a supported release yet).
+- Version label for this line: `26.2-2e-001` (development, not a supported release yet).
 - Upcoming public builds will be tagged after compile, startup, and regression testing.
 - Please use `dev/26.2` for validation and test feedback, not production deployments.
