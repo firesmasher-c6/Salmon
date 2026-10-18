@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/Java-21+-ED8B00?logo=openjdk&logoColor=white" alt="Java 21 or later">
 </p>
 
-**Salmon 2r-008 is the second stable Salmon release.** Salmon is a
+**Salmon 8e-009 is the second stable Salmon release.** Salmon is a
 Minecraft Java server based on Paper. It keeps the Paper-compatible server and
 plugin foundation while adding Salmon-branded configuration, optimization
 controls, diagnostics, and a plugin API.
@@ -71,15 +71,15 @@ in `paper-server/build/libs/`.
 4. Start the server again and tune Salmon in `salmon.yml` and
    `config/salmon-opts.yml`.
 
-Salmon's current version is **Minecraft `1.21.11`, build `2r-008`**. Rename the
-runnable server bundle to `salmon-1.21.11-2r-008.jar` and start it from your
+Salmon's current version is **Minecraft `1.21.11`, build `8e-009`**. Rename the
+runnable server bundle to `salmon-1.21.11-8e-009.jar` and start it from your
 server directory:
 
 ```sh
-java -Xms1G -Xmx4G -jar salmon-1.21.11-2r-008.jar --nogui
+java -Xms1G -Xmx4G -jar salmon-1.21.11-8e-009.jar --nogui
 ```
 
-> **Development notice:** `2r-008` is planned to be Salmon's final build for
+> **Development notice:** `8e-009` is planned to be Salmon's final build for
 > October 2026. Feature and optimization work is paused until November 1, 2026,
 > when development is scheduled to resume. Necessary bug fixes and patches may
 > still be made during the pause.
@@ -243,10 +243,10 @@ release filename before distributing or running it:
 
 ```sh
 mv paper-server/build/libs/paper-bundler-1.21.11-R0.1-SNAPSHOT-mojmap.jar \
-  paper-server/build/libs/salmon-1.21.11-2r-008.jar
+  paper-server/build/libs/salmon-1.21.11-8e-009.jar
 ```
 
-The release identity is **Minecraft `1.21.11`, build `2r-008`**. Keep the
+The release identity is **Minecraft `1.21.11`, build `8e-009`**. Keep the
 filename consistent in your release notes and server launch command.
 The plain `Salmon-*.jar` output is not the bundled server distribution; rename
 and use the `paper-bundler-*-mojmap.jar` artifact. Building the project does
