@@ -498,6 +498,7 @@ public final class CraftServer implements Server {
     }
 
     public void registerSalmonCommands() {
+        this.getLogger().info("Salmon: registering /salmon and /smp commands.");
         if (this.pluginManager.getPermission("salmon.command") == null) {
             this.pluginManager.addPermission(new org.bukkit.permissions.Permission("salmon.command", org.bukkit.permissions.PermissionDefault.OP));
         }
@@ -626,6 +627,7 @@ public final class CraftServer implements Server {
             DefaultPermissions.registerCorePermissions();
             CraftDefaultPermissions.registerCorePermissions();
             if (!io.papermc.paper.configuration.GlobalConfiguration.get().misc.loadPermissionsYmlBeforePlugins) this.loadCustomPermissions(); // Paper
+            this.registerSalmonCommands();
             this.syncCommands();
         }
     }
