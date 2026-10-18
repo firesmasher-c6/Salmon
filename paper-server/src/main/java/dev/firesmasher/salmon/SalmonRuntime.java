@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -81,6 +82,15 @@ public final class SalmonRuntime implements AutoCloseable {
         instance = runtime;
         SalmonAPIImpl.install(runtime);
         final SalmonConfiguration.Options options = configuration.options();
+
+        final boolean firstStart = !Files.exists(serverDirectory.resolve(".salmon-first-start"));
+        if (firstStart) {
+            try {
+                Files.writeString(serverDirectory.resolve(".salmon-first-start"), "created at server start");
+            } catch (java.io.IOException ignored) {
+                // Marker file is optional guidance; never fail startup over it.
+            }
+        }
         PluginExecutionMetrics.setEnabled(configuration.enabled() && options.pluginMetricsEnabled());
         eventTimingEnabled = configuration.enabled() && options.pluginMetricsEnabled() && options.pluginTrackEventHandlers();
         taskTimingEnabled = configuration.enabled() && options.pluginMetricsEnabled() && options.pluginTrackSchedulerTasks();
@@ -101,6 +111,12 @@ public final class SalmonRuntime implements AutoCloseable {
         } else {
             LOGGER.warning("Salmon is disabled in salmon.yml; Salmon optimizations will not run");
         }
+        if (configuration.enabled() && firstStart) {
+            runtime.executor.execute(() -> {
+                LOGGER.warning("Salmon tip: this looks like a fresh server. Before inviting players, pregenerate chunks (for example with the bundled Chunky plugin via /chunky or 'chunky world <world> add ...') so the world is ready and avoid generation lag spikes during play.");
+            });
+        }
+
         if (configuration.enabled() && options.pluginMetricsEnabled()) {
             runtime.executor.scheduleWithFixedDelay(
                 runtime::reportPluginMetrics,
