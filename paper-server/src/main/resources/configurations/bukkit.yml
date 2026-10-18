@@ -32,7 +32,7 @@ spawn-limits:
 chunk-gc:
     period-in-ticks: 600
 ticks-per:
-    animal-spawns: 400
+    animal-spawns: 600  # Salmon: slightly less frequent animal spawn scans (low-cost, negligible effect on normal gameplay)
     monster-spawns: 1
     water-spawns: 1
     water-ambient-spawns: 1
