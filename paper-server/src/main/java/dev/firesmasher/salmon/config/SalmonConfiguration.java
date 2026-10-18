@@ -71,6 +71,9 @@ public record SalmonConfiguration(boolean enabled, Options options) {
         boolean performanceCollisionsEnabled,
         int performanceMaxEntityCollisions,
         boolean performanceOnlyPlayersCollide,
+        boolean performanceTickSendEnabled,
+        int performanceTickDistance,
+        int performanceSendDistance,
         RedstoneImplementation redstoneImplementation
     ) {
     }
@@ -159,6 +162,9 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             options.getBoolean("performance.collisions.enabled"),
             optimizationActivationRange(options, "performance.collisions.max-entity-collisions"),
             options.getBoolean("performance.collisions.only-players-collide"),
+            options.getBoolean("performance.tick-send-distance.enabled"),
+            optimizationActivationRange(options, "performance.tick-send-distance.tick"),
+            optimizationActivationRange(options, "performance.tick-send-distance.send"),
             redstoneImplementation(options.getString("redstone.implementation", "alternate_current"))
         );
         return new SalmonConfiguration(main.getBoolean("salmon.enabled", true), parsedOptions);

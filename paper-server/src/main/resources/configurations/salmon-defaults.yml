@@ -163,3 +163,7 @@ villagers:
     enabled: false
     max-entity-collisions: -1
     only-players-collide: false
+  tick-send-distance:
+    enabled: false
+    tick: -1
+    send: -1

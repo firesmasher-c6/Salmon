@@ -326,6 +326,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
             this.applySalmonActivationRanges(contextMap);
             this.applySalmonTrackingRanges(contextMap);
             this.applySalmonCollisions(worldConfiguration);
+            this.applySalmonTickSend(contextMap);
             return worldConfiguration;
         } catch (IOException exception) {
             throw new RuntimeException("Could not create world config for " + levelKey, exception);
@@ -370,6 +371,21 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
             worldConfiguration.collisions.maxEntityCollisions = salmon.options().performanceMaxEntityCollisions();
         }
         worldConfiguration.collisions.onlyPlayersCollide = salmon.options().performanceOnlyPlayersCollide();
+    }
+
+    private void applySalmonTickSend(final ContextMap contextMap) {
+        final SalmonConfiguration salmon = this.salmonConfiguration();
+        if (!salmon.enabled() || !salmon.options().performanceTickSendEnabled()) {
+            return;
+        }
+        final int tick = salmon.options().performanceTickDistance();
+        final int send = salmon.options().performanceSendDistance();
+        if (tick < 0 || send < 0 || send < tick) {
+            return;
+        }
+        final SpigotWorldConfig spigot = contextMap.require(PaperConfigurations.SPIGOT_WORLD_CONFIG_CONTEXT_KEY).get();
+        spigot.simulationDistance = tick;
+        spigot.viewDistance = send;
     }
 
     private synchronized SalmonConfiguration salmonConfiguration() {
@@ -433,6 +449,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
                 this.applySalmonActivationRanges(contextMap);
                 this.applySalmonTrackingRanges(contextMap);
                 this.applySalmonCollisions(worldConfiguration);
+                this.applySalmonTickSend(contextMap);
             }
         } catch (Exception ex) {
             throw new RuntimeException("Could not reload paper configuration files", ex);
