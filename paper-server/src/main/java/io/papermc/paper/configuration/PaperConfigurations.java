@@ -327,6 +327,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
             this.applySalmonTrackingRanges(contextMap);
             this.applySalmonCollisions(worldConfiguration);
             this.applySalmonTickSend(contextMap);
+            this.applySalmonWorldTuning(contextMap, worldConfiguration);
             return worldConfiguration;
         } catch (IOException exception) {
             throw new RuntimeException("Could not create world config for " + levelKey, exception);
@@ -386,6 +387,19 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         final SpigotWorldConfig spigot = contextMap.require(PaperConfigurations.SPIGOT_WORLD_CONFIG_CONTEXT_KEY).get();
         spigot.simulationDistance = tick;
         spigot.viewDistance = send;
+    }
+
+    private void applySalmonWorldTuning(final ContextMap contextMap, final WorldConfiguration worldConfiguration) {
+        final SalmonConfiguration salmon = this.salmonConfiguration();
+        if (!salmon.enabled() || !salmon.options().performanceWorldTuningEnabled()) {
+            return;
+        }
+        final SpigotWorldConfig spigot = contextMap.require(PaperConfigurations.SPIGOT_WORLD_CONFIG_CONTEXT_KEY).get();
+        if (salmon.options().performanceItemMergeRadius() >= 0) spigot.itemMerge = salmon.options().performanceItemMergeRadius();
+        if (salmon.options().performanceExperienceMergeRadius() >= 0) spigot.expMerge = salmon.options().performanceExperienceMergeRadius();
+        if (salmon.options().performanceNonPlayerArrowDespawnRate() >= 0) spigot.arrowDespawnRate = salmon.options().performanceNonPlayerArrowDespawnRate();
+        spigot.tickInactiveVillagers = salmon.options().performanceTickInactiveVillagers();
+        worldConfiguration.hopper.cooldownWhenFull = salmon.options().performanceHopperCooldownWhenFull();
     }
 
     private synchronized SalmonConfiguration salmonConfiguration() {
@@ -450,6 +464,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
                 this.applySalmonTrackingRanges(contextMap);
                 this.applySalmonCollisions(worldConfiguration);
                 this.applySalmonTickSend(contextMap);
+                this.applySalmonWorldTuning(contextMap, worldConfiguration);
             }
         } catch (Exception ex) {
             throw new RuntimeException("Could not reload paper configuration files", ex);

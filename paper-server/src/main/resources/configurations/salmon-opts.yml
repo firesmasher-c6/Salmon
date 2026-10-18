@@ -255,3 +255,10 @@ performance:
     enabled: false
     tick: -1
     send: -1
+  world-tuning:
+    enabled: false
+    item-merge-radius: -1.0
+    experience-merge-radius: -1.0
+    non-player-arrow-despawn-rate: -1
+    hopper-cooldown-when-full: true
+    tick-inactive-villagers: false
