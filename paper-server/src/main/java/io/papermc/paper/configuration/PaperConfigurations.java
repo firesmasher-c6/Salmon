@@ -392,6 +392,12 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         if (salmon.options().performancePlayerMaxConcurrentChunkGenerates() >= 0) {
             configuration.chunkLoadingAdvanced.playerMaxConcurrentChunkGenerates = salmon.options().performancePlayerMaxConcurrentChunkGenerates();
         }
+        if (salmon.options().performancePlayerMaxChunkLoadRate() >= 0) {
+            configuration.chunkLoadingBasic.playerMaxChunkLoadRate = salmon.options().performancePlayerMaxChunkLoadRate();
+        }
+        if (salmon.options().performancePlayerMaxChunkGenerateRate() >= 0) {
+            configuration.chunkLoadingBasic.playerMaxChunkGenerateRate = salmon.options().performancePlayerMaxChunkGenerateRate();
+        }
     }
 
     @Override

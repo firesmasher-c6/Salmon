@@ -59,6 +59,8 @@ public record SalmonConfiguration(boolean enabled, Options options) {
         int performanceVillagerActivationRange,
         boolean performanceChunkLoadingEnabled,
         int performancePlayerMaxConcurrentChunkGenerates,
+        double performancePlayerMaxChunkLoadRate,
+        double performancePlayerMaxChunkGenerateRate,
         boolean performanceTrackingRangesEnabled,
         int performancePlayerTrackingRange,
         int performanceMonsterTrackingRange,
@@ -142,6 +144,8 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             optimizationActivationRange(options, "performance.activation-ranges.villagers"),
             options.getBoolean("performance.chunk-loading.enabled"),
             optimizationActivationRange(options, "performance.chunk-loading.player-max-concurrent-chunk-generates"),
+            doubleOption(options, "performance.chunk-loading.player-max-chunk-load-rate"),
+            doubleOption(options, "performance.chunk-loading.player-max-chunk-generate-rate"),
             options.getBoolean("performance.tracking-ranges.enabled"),
             optimizationActivationRange(options, "performance.tracking-ranges.player"),
             optimizationActivationRange(options, "performance.tracking-ranges.monster"),
@@ -228,6 +232,11 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             throw new IllegalArgumentException("Salmon setting '" + path + "' must be -1 or greater");
         }
         return value;
+    }
+
+
+    private static double doubleOption(final FileConfiguration options, final String path) {
+        return options.getDouble(path, -1.0);
     }
 
     private static FileConfiguration loadFile(final Path path) throws IOException, InvalidConfigurationException {

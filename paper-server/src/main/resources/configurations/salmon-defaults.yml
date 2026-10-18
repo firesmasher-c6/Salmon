@@ -149,6 +149,8 @@ villagers:
   chunk-loading:
     enabled: false
     player-max-concurrent-chunk-generates: -1
+    player-max-chunk-load-rate: -1.0
+    player-max-chunk-generate-rate: -1.0
   tracking-ranges:
     enabled: false
     player: -1
