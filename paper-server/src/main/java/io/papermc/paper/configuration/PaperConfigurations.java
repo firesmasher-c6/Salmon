@@ -226,6 +226,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
     public GlobalConfiguration initializeGlobalConfiguration(final RegistryAccess registryAccess) throws ConfigurateException {
         GlobalConfiguration configuration = super.initializeGlobalConfiguration(registryAccess);
         GlobalConfiguration.set(configuration);
+        this.applySalmonChunkLoading(configuration);
         return configuration;
     }
 
@@ -368,6 +369,16 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         };
     }
 
+    private void applySalmonChunkLoading(final GlobalConfiguration configuration) {
+        final SalmonConfiguration salmon = this.salmonConfiguration();
+        if (!salmon.enabled() || !salmon.options().performanceChunkLoadingEnabled()) {
+            return;
+        }
+        if (salmon.options().performancePlayerMaxConcurrentChunkGenerates() >= 0) {
+            configuration.chunkLoadingAdvanced.playerMaxConcurrentChunkGenerates = salmon.options().performancePlayerMaxConcurrentChunkGenerates();
+        }
+    }
+
     @Override
     protected boolean isConfigType(final Type type) {
         return ConfigurationPart.class.isAssignableFrom(erase(type));
@@ -376,7 +387,8 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
     public void reloadConfigs(MinecraftServer server) {
         try {
             this.salmonConfiguration = null;
-            this.initializeGlobalConfiguration(server.registryAccess(), reloader(this.globalConfigClass, GlobalConfiguration.get()));
+            final GlobalConfiguration globalConfiguration = this.initializeGlobalConfiguration(server.registryAccess(), reloader(this.globalConfigClass, GlobalConfiguration.get()));
+            this.applySalmonChunkLoading(globalConfiguration);
             this.initializeWorldDefaultsConfiguration(server.registryAccess());
             for (ServerLevel level : server.getAllLevels()) {
                 final ContextMap contextMap = createWorldContextMap(level);

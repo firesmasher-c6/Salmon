@@ -146,3 +146,6 @@ villagers:
     flying-monsters: -1
     water: -1
     villagers: -1
+  chunk-loading:
+    enabled: false
+    player-max-concurrent-chunk-generates: -1

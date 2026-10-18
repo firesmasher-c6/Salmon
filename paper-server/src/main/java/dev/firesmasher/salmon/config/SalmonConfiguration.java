@@ -57,6 +57,8 @@ public record SalmonConfiguration(boolean enabled, Options options) {
         int performanceFlyingMonsterActivationRange,
         int performanceWaterActivationRange,
         int performanceVillagerActivationRange,
+        boolean performanceChunkLoadingEnabled,
+        int performancePlayerMaxConcurrentChunkGenerates,
         RedstoneImplementation redstoneImplementation
     ) {
     }
@@ -131,6 +133,8 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             optimizationActivationRange(options, "performance.activation-ranges.flying-monsters"),
             optimizationActivationRange(options, "performance.activation-ranges.water"),
             optimizationActivationRange(options, "performance.activation-ranges.villagers"),
+            options.getBoolean("performance.chunk-loading.enabled"),
+            optimizationActivationRange(options, "performance.chunk-loading.player-max-concurrent-chunk-generates"),
             redstoneImplementation(options.getString("redstone.implementation", "alternate_current"))
         );
         return new SalmonConfiguration(main.getBoolean("salmon.enabled", true), parsedOptions);
