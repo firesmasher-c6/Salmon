@@ -8,7 +8,7 @@
   <a href="https://github.com/firesmasher-c6/Salmon/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/firesmasher-c6/Salmon/build.yml?branch=ver%2F1.21.11&label=build" alt="Build status"></a>
   <a href="https://github.com/firesmasher-c6/Salmon/releases/latest"><img src="https://img.shields.io/github/v/release/firesmasher-c6/Salmon?label=latest%20release" alt="Latest Salmon release"></a>
   <a href="https://github.com/firesmasher-c6/Salmon"><img src="https://img.shields.io/github/license/firesmasher-c6/Salmon?label=license" alt="GPLv3 license"></a>
-  <img src="https://img.shields.io/badge/Minecraft-1.21.11-3C8527?logo=minecraft&logoColor=white" alt="Minecraft 1.21.11">
+  <img src="https://img.shields.io/badge/Minecraft-1.21.11-3C8527?logo=minecraft&logoColor=white" alt="Minecraft 26.2 (dev)">
   <img src="https://img.shields.io/badge/Java-21+-ED8B00?logo=openjdk&logoColor=white" alt="Java 21 or later">
 </p>
 
@@ -285,3 +285,10 @@ For information about the upstream API, see
 Salmon is built on Paper; see the upstream project's
 [repository](https://github.com/PaperMC/Paper) for its contributors and
 project details.
+
+## Development status (26.2)
+
+- `dev/26.2` is the active development line for Paper 26.2-based Salmon builds.
+- Version label for this line: `26.2-1e-000` (development, not a supported release yet).
+- Upcoming public builds will be tagged after compile, startup, and regression testing.
+- Please use `dev/26.2` for validation and test feedback, not production deployments.
