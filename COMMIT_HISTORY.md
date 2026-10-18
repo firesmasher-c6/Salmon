@@ -1,4 +1,15 @@
-| c8db9dfa1 | 2026-10-18 14:33:03 +0800 | Merge pull request #1 from firesmasher-c6/release/3r-009 |
+| da41e26ef | 2026-10-18 08:07:49 +0000 | Document dev/26.2 upcoming builds and development status |
+| e37f3d837 | 2026-10-18 08:07:35 +0000 | Update landing docs: longer README, optimization guide, discord note |
+| a1d00414e | 2026-10-18 08:00:36 +0000 | Brand 26.2 build as Salmon 1e-000 |
+| 78409437f | 2026-10-18 07:53:53 +0000 | Reorganize Salmon classes into subpackages; fix config resource path; restore tests |
+| 480f8b5df | 2026-10-18 07:45:02 +0000 | No-op: revert accidental tarball commit |
+| 89773bd6c | 2026-10-18 07:39:20 +0000 | Reintegrate Chunky bootstrap integration into 26.2 base |
+| 46031db9a | 2026-10-18 07:37:49 +0000 | Reintegrate Salmon redstone configuration and runtime into 26.2 base |
+| 079c4b010 | 2026-10-18 07:22:11 +0000 | Port dev branch to Paper 26.2 base (Salmon 3r-009 code pending reintegration) |
+| 3ad6b794b | 2026-10-18 14:58:30 +0800 | Merge pull request #2 from firesmasher-c6/release/1.21.11-3r-009 |
+| 017693256 | 2026-10-18 06:49:34 +0000 | Mark 1.21.11 release line unsupported on landing branch |
+| a9ff1c44c | 2026-10-18 06:48:10 +0000 | Add landing documentation-only branch with commit history and branch links |
+| 2c871dba0 | 2026-10-18 06:42:31 +0000 | Add landing documentation-only branch with commit history and branch links |
 | b3aa71beb | 2026-10-18 06:24:20 +0000 | 3r-009 stable release: first-start chunky guidance and version bump |
 | 9733d7881 | 2026-10-18 06:20:02 +0000 | Self-heal missing Salmon config keys by merging shipped defaults |
 | e2fefd0bc | 2026-10-18 06:15:50 +0000 | Fix version fetcher to ignore trailing Git hash on local builds |
