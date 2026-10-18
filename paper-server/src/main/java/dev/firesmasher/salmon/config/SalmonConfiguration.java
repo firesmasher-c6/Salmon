@@ -59,6 +59,13 @@ public record SalmonConfiguration(boolean enabled, Options options) {
         int performanceVillagerActivationRange,
         boolean performanceChunkLoadingEnabled,
         int performancePlayerMaxConcurrentChunkGenerates,
+        boolean performanceTrackingRangesEnabled,
+        int performancePlayerTrackingRange,
+        int performanceMonsterTrackingRange,
+        int performanceAnimalTrackingRange,
+        int performanceMiscTrackingRange,
+        int performanceDisplayTrackingRange,
+        int performanceOtherTrackingRange,
         RedstoneImplementation redstoneImplementation
     ) {
     }
@@ -135,6 +142,13 @@ public record SalmonConfiguration(boolean enabled, Options options) {
             optimizationActivationRange(options, "performance.activation-ranges.villagers"),
             options.getBoolean("performance.chunk-loading.enabled"),
             optimizationActivationRange(options, "performance.chunk-loading.player-max-concurrent-chunk-generates"),
+            options.getBoolean("performance.tracking-ranges.enabled"),
+            optimizationActivationRange(options, "performance.tracking-ranges.player"),
+            optimizationActivationRange(options, "performance.tracking-ranges.monster"),
+            optimizationActivationRange(options, "performance.tracking-ranges.animal"),
+            optimizationActivationRange(options, "performance.tracking-ranges.misc"),
+            optimizationActivationRange(options, "performance.tracking-ranges.display"),
+            optimizationActivationRange(options, "performance.tracking-ranges.other"),
             redstoneImplementation(options.getString("redstone.implementation", "alternate_current"))
         );
         return new SalmonConfiguration(main.getBoolean("salmon.enabled", true), parsedOptions);

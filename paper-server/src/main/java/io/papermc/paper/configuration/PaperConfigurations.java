@@ -324,6 +324,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
             final WorldConfiguration worldConfiguration = super.createWorldConfig(contextMap);
             this.applySalmonRedstoneConfiguration(worldConfiguration);
             this.applySalmonActivationRanges(contextMap);
+            this.applySalmonTrackingRanges(contextMap);
             return worldConfiguration;
         } catch (IOException exception) {
             throw new RuntimeException("Could not create world config for " + levelKey, exception);
@@ -343,6 +344,20 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         if (salmon.options().performanceFlyingMonsterActivationRange() >= 0) spigot.flyingMonsterActivationRange = salmon.options().performanceFlyingMonsterActivationRange();
         if (salmon.options().performanceWaterActivationRange() >= 0) spigot.waterActivationRange = salmon.options().performanceWaterActivationRange();
         if (salmon.options().performanceVillagerActivationRange() >= 0) spigot.villagerActivationRange = salmon.options().performanceVillagerActivationRange();
+    }
+
+    private void applySalmonTrackingRanges(final ContextMap contextMap) {
+        final SalmonConfiguration salmon = this.salmonConfiguration();
+        if (!salmon.enabled() || !salmon.options().performanceTrackingRangesEnabled()) {
+            return;
+        }
+        final SpigotWorldConfig spigot = contextMap.require(PaperConfigurations.SPIGOT_WORLD_CONFIG_CONTEXT_KEY).get();
+        if (salmon.options().performancePlayerTrackingRange() >= 0) spigot.playerTrackingRange = salmon.options().performancePlayerTrackingRange();
+        if (salmon.options().performanceMonsterTrackingRange() >= 0) spigot.monsterTrackingRange = salmon.options().performanceMonsterTrackingRange();
+        if (salmon.options().performanceAnimalTrackingRange() >= 0) spigot.animalTrackingRange = salmon.options().performanceAnimalTrackingRange();
+        if (salmon.options().performanceMiscTrackingRange() >= 0) spigot.miscTrackingRange = salmon.options().performanceMiscTrackingRange();
+        if (salmon.options().performanceDisplayTrackingRange() >= 0) spigot.displayTrackingRange = salmon.options().performanceDisplayTrackingRange();
+        if (salmon.options().performanceOtherTrackingRange() >= 0) spigot.otherTrackingRange = salmon.options().performanceOtherTrackingRange();
     }
 
     private synchronized SalmonConfiguration salmonConfiguration() {
@@ -398,6 +413,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
                 );
                 this.applySalmonRedstoneConfiguration(worldConfiguration);
                 this.applySalmonActivationRanges(contextMap);
+                this.applySalmonTrackingRanges(contextMap);
             }
         } catch (Exception ex) {
             throw new RuntimeException("Could not reload paper configuration files", ex);

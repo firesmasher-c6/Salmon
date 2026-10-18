@@ -237,3 +237,11 @@ performance:
   chunk-loading:
     enabled: false
     player-max-concurrent-chunk-generates: -1
+  tracking-ranges:
+    enabled: false
+    player: -1
+    monster: -1
+    animal: -1
+    misc: -1
+    display: -1
+    other: -1
