@@ -99,3 +99,36 @@ redstone:
   # vanilla when strict vanilla circuit update behavior is required.
   # Choices: paper, vanilla, eigencraft, alternate_current.
   implementation: alternate_current
+
+# ---------------------------------------------------------------------------
+# Salmon 8e-009 — opt-in TPS optimizations for large SMPs (disabled/vanilla
+# by default; uncomment/adjust to enable).
+# ---------------------------------------------------------------------------
+
+tracking-ranges:
+  # Per-entity tracking (view) ranges in blocks. "default" keeps Paper's
+  # vanilla range. Lower values reduce packet cost on high-player servers.
+  enabled: false
+  default: default
+  player: default   # keep players mutually visible at normal engagement distance
+  hostile: default
+  animal: default
+  misc: 32          # items, arrows, experience orbs (tighter default intended)
+  other: default
+
+tick-distance:
+  # Split full simulation radius (tick) from client render radius (send).
+  # send must be >= tick. Equal values means the feature is off.
+  # SAFETY: lower tick-distance freezes AI/redstone/random ticks in chunks
+  # that are still rendered, which can affect mob farms and ticking contraptions.
+  tick: default
+  send: default
+
+villagers:
+  proximity-throttle:
+    # Reduces villager AI/pathfinding tick rate when far from any player.
+    # Villagers near a player stay full-rate. Distant farms progress slower.
+    enabled: false
+    near-radius: 32   # full rate within this distance
+    far-radius: 96    # minimum rate beyond this distance
+    minimum-tick-rate: 4
