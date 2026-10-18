@@ -14,9 +14,10 @@ Design goals:
 
 ## Branches
 - `landing` — docs only (this branch)
-- `ver/1.21.11` — stable 1.21.11 line (legacy)
+- `dev/26.2` — active development line for Paper 26.2 (contains code)
+- `ver/1.21.11` — legacy 1.21.11 line (deleted on remote; historical 1.21.11 work remains available via tags/releases)
 - `release/1.21.11-3r-009` — stable release line (1.21.11, currently unsupported)
-- `dev/26.2` — active development on Paper 26.2; newer performance work will happen here
+- `main` — not used
 
 ## Release history
 See `COMMIT_HISTORY.md` plus individual GitHub release pages for verified downloads.
