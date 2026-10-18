@@ -1,4 +1,12 @@
-package dev.firesmasher.salmon;
+package dev.firesmasher.salmon.runtime;
+
+import dev.firesmasher.salmon.PluginExecutionMetrics;
+
+import dev.firesmasher.salmon.service.ModrinthService;
+
+import dev.firesmasher.salmon.config.SalmonConfiguration;
+
+
 
 import dev.firesmasher.salmon.PluginExecutionMetrics.Snapshot;
 import java.io.IOException;

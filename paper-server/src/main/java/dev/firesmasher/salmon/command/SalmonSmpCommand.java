@@ -1,4 +1,7 @@
-package dev.firesmasher.salmon;
+package dev.firesmasher.salmon.command;
+
+import dev.firesmasher.salmon.runtime.SalmonRuntime;
+
 
 import java.io.IOException;
 import java.util.List;

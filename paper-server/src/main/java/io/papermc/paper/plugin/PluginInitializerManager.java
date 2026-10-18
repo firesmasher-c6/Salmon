@@ -199,9 +199,9 @@ public class PluginInitializerManager {
 
     private static void prepareSalmonChunkyOffThread(final Path pluginDirectory) throws Exception {
         try {
-            final dev.firesmasher.salmon.SalmonConfiguration configuration =
-                dev.firesmasher.salmon.SalmonConfiguration.load(Path.of(".").toAbsolutePath().normalize());
-            final dev.firesmasher.salmon.SalmonConfiguration.Options options = configuration.options();
+            final dev.firesmasher.salmon.config.SalmonConfiguration configuration =
+                dev.firesmasher.salmon.config.SalmonConfiguration.load(Path.of(".").toAbsolutePath().normalize());
+            final dev.firesmasher.salmon.config.SalmonConfiguration.Options options = configuration.options();
             if (!configuration.enabled() || !options.chunkyPregenerationEnabled()) {
                 return;
             }
@@ -209,7 +209,7 @@ public class PluginInitializerManager {
                 LOGGER.warn("Chunky auto-install is enabled, but Modrinth services are disabled; skipping download.");
                 return;
             }
-            new dev.firesmasher.salmon.ModrinthService(pluginDirectory,
+            new dev.firesmasher.salmon.service.ModrinthService(pluginDirectory,
                 net.minecraft.SharedConstants.getCurrentVersion().name()).installChunky();
         } catch (final java.io.IOException | org.bukkit.configuration.InvalidConfigurationException
             | IllegalArgumentException exception) {

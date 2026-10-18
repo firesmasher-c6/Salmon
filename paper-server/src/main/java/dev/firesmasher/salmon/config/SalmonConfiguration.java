@@ -1,4 +1,4 @@
-package dev.firesmasher.salmon;
+package dev.firesmasher.salmon.config;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

@@ -3,7 +3,7 @@ package io.papermc.paper.configuration;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Table;
 import com.mojang.logging.LogUtils;
-import dev.firesmasher.salmon.SalmonConfiguration;
+import dev.firesmasher.salmon.config.SalmonConfiguration;
 import io.leangen.geantyref.TypeToken;
 import io.papermc.paper.configuration.legacy.RequiresSpigotInitialization;
 import io.papermc.paper.configuration.mapping.Definition;

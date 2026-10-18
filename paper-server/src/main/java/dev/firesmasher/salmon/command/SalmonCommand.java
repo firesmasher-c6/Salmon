@@ -1,4 +1,10 @@
-package dev.firesmasher.salmon;
+package dev.firesmasher.salmon.command;
+
+import dev.firesmasher.salmon.service.ModrinthService;
+
+import dev.firesmasher.salmon.runtime.SalmonRuntime;
+
+
 
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
@@ -51,7 +57,7 @@ public final class SalmonCommand extends Command {
                     return;
                 }
                 sender.sendMessage(text("Modrinth plugin results:"));
-                for (dev.firesmasher.salmon.ModrinthService.Project project : projects) {
+                for (dev.firesmasher.salmon.service.ModrinthService.Project project : projects) {
                     sender.sendMessage(text(" - " + project.title() + " (" + project.slug() + "): "
                         + project.description()));
                 }

@@ -261,10 +261,10 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
 
-import dev.firesmasher.salmon.SalmonConfiguration;
-import dev.firesmasher.salmon.SalmonCommand;
-import dev.firesmasher.salmon.SalmonRuntime;
-import dev.firesmasher.salmon.SalmonSmpCommand;
+import dev.firesmasher.salmon.config.SalmonConfiguration;
+import dev.firesmasher.salmon.command.SalmonCommand;
+import dev.firesmasher.salmon.runtime.SalmonRuntime;
+import dev.firesmasher.salmon.command.SalmonSmpCommand;
 
 public final class CraftServer implements Server {
     private final String serverName = io.papermc.paper.ServerBuildInfo.buildInfo().brandName();

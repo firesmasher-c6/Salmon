@@ -1,4 +1,4 @@
-package dev.firesmasher.salmon;
+package dev.firesmasher.salmon.runtime;
 
 import dev.firesmasher.salmon.plugins.api.SalmonAPI;
 import java.util.concurrent.CompletableFuture;

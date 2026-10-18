@@ -1,4 +1,4 @@
-package dev.firesmasher.salmon;
+package dev.firesmasher.salmon.version;
 
 import com.destroystokyo.paper.util.VersionFetcher;
 import com.google.gson.JsonElement;
@@ -102,7 +102,7 @@ public final class SalmonVersionFetcher implements VersionFetcher {
         return build;
     }
 
-    static Component updateMessage(final String currentBuild, final String latestRelease) {
+    public static Component updateMessage(final String currentBuild, final String latestRelease) {
         if (currentBuild.equals(latestRelease)) {
             return Component.text("You are running the latest Salmon release (" + latestRelease + ").", NamedTextColor.GREEN);
         }

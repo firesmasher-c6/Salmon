@@ -1,4 +1,4 @@
-package dev.firesmasher.salmon;
+package dev.firesmasher.salmon.service;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

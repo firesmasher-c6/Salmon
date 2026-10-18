@@ -1,4 +1,4 @@
-package dev.firesmasher.salmon;
+package dev.firesmasher.salmon.runtime;
 
 import java.io.IOException;
 import java.nio.file.Path;
