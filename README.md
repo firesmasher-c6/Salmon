@@ -8,7 +8,7 @@
   <a href="https://github.com/firesmasher-c6/Salmon/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/firesmasher-c6/Salmon/build.yml?branch=dev%2F26.2&label=build" alt="Build status"></a>
   <a href="https://github.com/firesmasher-c6/Salmon/releases/latest"><img src="https://img.shields.io/github/v/release/firesmasher-c6/Salmon?label=latest%20release" alt="Latest Salmon release"></a>
   <a href="https://github.com/firesmasher-c6/Salmon"><img src="https://img.shields.io/github/license/firesmasher-c6/Salmon?label=license" alt="GPLv3 license"></a>
-  <img src="https://img.shields.io/badge/Minecraft-1.21.11-3C8527?logo=minecraft&logoColor=white" alt="Minecraft 26.2 (dev)">
+  <img src="https://img.shields.io/badge/Minecraft-26.2-3C8527?logo=minecraft&logoColor=white" alt="Minecraft 26.2">
   <img src="https://img.shields.io/badge/Java-21+-ED8B00?logo=openjdk&logoColor=white" alt="Java 25 or later">
 </p>
 
