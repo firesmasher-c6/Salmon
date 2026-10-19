@@ -399,6 +399,11 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         if (salmon.options().performanceExperienceMergeRadius() >= 0) spigot.expMerge = salmon.options().performanceExperienceMergeRadius();
         if (salmon.options().performanceNonPlayerArrowDespawnRate() >= 0) spigot.arrowDespawnRate = salmon.options().performanceNonPlayerArrowDespawnRate();
         spigot.tickInactiveVillagers = salmon.options().performanceTickInactiveVillagers();
+        if (salmon.options().performanceVillagerWakeUpEnabled()) {
+            if (salmon.options().performanceVillagerWakeUpMaxPerTick() >= 0) spigot.wakeUpInactiveVillagers = salmon.options().performanceVillagerWakeUpMaxPerTick();
+            if (salmon.options().performanceVillagerWakeUpEvery() >= 0) spigot.wakeUpInactiveVillagersEvery = salmon.options().performanceVillagerWakeUpEvery();
+            if (salmon.options().performanceVillagerWakeUpFor() >= 0) spigot.wakeUpInactiveVillagersFor = salmon.options().performanceVillagerWakeUpFor();
+        }
         worldConfiguration.hopper.cooldownWhenFull = salmon.options().performanceHopperCooldownWhenFull();
     }
 

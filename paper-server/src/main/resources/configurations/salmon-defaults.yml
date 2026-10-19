@@ -174,3 +174,8 @@ villagers:
     non-player-arrow-despawn-rate: -1
     hopper-cooldown-when-full: true
     tick-inactive-villagers: false
+    villager-wake-up:
+      enabled: false
+      max-per-tick: -1
+      every: -1
+      for: -1
