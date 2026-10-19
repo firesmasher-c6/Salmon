@@ -235,12 +235,12 @@ performance:
     water: -1
     villagers: -1
   chunk-loading:
-    enabled: false
-    player-max-concurrent-chunk-generates: -1
-    player-max-chunk-load-rate: -1.0
-    player-max-chunk-generate-rate: -1.0
+    enabled: true
+    player-max-concurrent-chunk-generates: 1
+    player-max-chunk-load-rate: 32.0
+    player-max-chunk-generate-rate: 3.0
   tracking-ranges:
-    enabled: false
+    enabled: true
     player: -1
     monster: -1
     animal: -1
@@ -248,20 +248,20 @@ performance:
     display: -1
     other: -1
   collisions:
-    enabled: false
-    max-entity-collisions: -1
+    enabled: true
+    max-entity-collisions: 4
     only-players-collide: false
   tick-send-distance:
     enabled: false
     tick: -1
     send: -1
   world-tuning:
-    enabled: false
+    enabled: true
     item-merge-radius: -1.0
     experience-merge-radius: -1.0
     non-player-arrow-despawn-rate: -1
     hopper-cooldown-when-full: true
-    tick-inactive-villagers: false
+    tick-inactive-villagers: true
     villager-wake-up:
       enabled: false
       max-per-tick: -1

@@ -339,14 +339,22 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         if (!salmon.enabled() || !salmon.options().performanceActivationRangesEnabled()) {
             return;
         }
+        final boolean aggressive = "aggressive".equalsIgnoreCase(salmon.options().performanceActivationRangePreset());
         final SpigotWorldConfig spigot = contextMap.require(PaperConfigurations.SPIGOT_WORLD_CONFIG_CONTEXT_KEY).get();
         if (salmon.options().performanceAnimalActivationRange() >= 0) spigot.animalActivationRange = salmon.options().performanceAnimalActivationRange();
+        else if (aggressive) spigot.animalActivationRange = 16;
         if (salmon.options().performanceMonsterActivationRange() >= 0) spigot.monsterActivationRange = salmon.options().performanceMonsterActivationRange();
+        else if (aggressive) spigot.monsterActivationRange = 16;
         if (salmon.options().performanceRaiderActivationRange() >= 0) spigot.raiderActivationRange = salmon.options().performanceRaiderActivationRange();
+        else if (aggressive) spigot.raiderActivationRange = 24;
         if (salmon.options().performanceMiscActivationRange() >= 0) spigot.miscActivationRange = salmon.options().performanceMiscActivationRange();
+        else if (aggressive) spigot.miscActivationRange = 8;
         if (salmon.options().performanceFlyingMonsterActivationRange() >= 0) spigot.flyingMonsterActivationRange = salmon.options().performanceFlyingMonsterActivationRange();
+        else if (aggressive) spigot.flyingMonsterActivationRange = 16;
         if (salmon.options().performanceWaterActivationRange() >= 0) spigot.waterActivationRange = salmon.options().performanceWaterActivationRange();
+        else if (aggressive) spigot.waterActivationRange = 8;
         if (salmon.options().performanceVillagerActivationRange() >= 0) spigot.villagerActivationRange = salmon.options().performanceVillagerActivationRange();
+        else if (aggressive) spigot.villagerActivationRange = 32;
     }
 
     private void applySalmonTrackingRanges(final ContextMap contextMap) {

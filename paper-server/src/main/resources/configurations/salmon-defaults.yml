@@ -1,14 +1,43 @@
 # ============================================================================
-# Salmon Optimization Defaults
+# Salmon Optimization Settings
 #
-# This file provides the base values for config/salmon-opts.yml. Edit
-# salmon-opts.yml to override individual settings; the defaults file documents
-# the complete set of options and is restored only if it is missing.
+# These are active settings, not examples. Salmon reads this file at server
+# startup and applies the values below. Edit the values to tune Salmon for your
+# server; leave an option unchanged to keep the safe setting shown here.
 #
-# Chunk caps are enabled by default to keep dense TNT and hostile-mob buildup
-# in check. They reject new matching spawns after a per-chunk cap is reached.
-# Persistent-mob cleanup stays disabled by default because it permanently
-# removes entities from existing worlds.
+# Salmon separates optimizations into three groups:
+#   chunks: limits entities allowed to spawn in an individual chunk.
+#   entities.cleanup: optionally removes old persistent hostile mobs.
+#   plugins.chunky-pregeneration: installs Chunky from Modrinth before Paper loads plugins.
+#   plugins.modrinth: provides safe plugin search and installation commands.
+#   plugins.metrics: measures plugin event handlers and scheduled task time.
+#   redstone: chooses Paper's redstone update implementation for every world.
+#
+# Chunk caps are enabled by default with limits for TNT and hostile, passive,
+# water, and ambient mobs. They reject new matching spawns in crowded chunks.
+# Entity cleanup remains disabled by default because it permanently removes
+# matching mobs from existing worlds. Plugin metrics are disabled by default
+# because collecting timings adds work to plugin handlers and tasks.
+#
+# Values in this file override the corresponding values in
+# config/salmon-defaults.yml. The defaults file is a reference/fallback; edit
+# this file when you want an optimization to use a different value.
+#
+# SAFETY:
+#   - Setting chunks.enabled to true can reject entity spawns after a cap.
+#   - Setting entities.cleanup.enabled to true permanently removes eligible
+#     mobs. Back up worlds before enabling cleanup or widening its entity list.
+#   - Modrinth installs plugin code with the permissions of the server process.
+#     Review projects before installing; new plugins load after a restart.
+#   - Chunky auto-install contacts Modrinth before plugin initialization and
+#     requires Internet access. Disable plugins.chunky-pregeneration.enabled
+#     to opt out.
+#   - redstone.implementation: alternate_current greatly speeds up redstone
+#     wire updates, but changes dust update order; location-dependent machines
+#     may behave differently. Use vanilla for vanilla update behavior.
+#   - Use spaces for indentation. Do not use tabs or change the YAML structure.
+#   - Restart the server after changing any value. Changes are not hot-reloaded.
+#   - Invalid YAML or invalid numeric values stop startup with an error.
 #
 # Website: https://codestuff.pages.dev (Deprecated)
 # GitHub: https://github.com/firesmasher-c6
@@ -23,81 +52,139 @@
 #   Lead Programmer: GitHub Copilot
 #   Publisher: FireSmasher
 #   License: GPLv3
-#
-# Breaking YAML indentation or changing a value to the wrong type can prevent
-# startup. Keep indentation spaces (not tabs), and make a backup before editing.
-# Restart the server after changing Salmon configuration files.
 # ============================================================================
 
 chunks:
-  # Limits new TNT and hostile spawns when a chunk reaches either configured cap.
+  # Enables Salmon's per-chunk spawn limits. This does not remove existing
+  # entities; it rejects new matching entities once a limit is reached.
   enabled: true
-  # Maximum primed TNT entities allowed per chunk; 0 disables only this cap.
+
+  # Maximum primed TNT entities permitted in a chunk at spawn time.
+  # Set to 0 to disable this individual cap. A cap can prevent TNT chains or
+  # other large explosions from growing, and may affect redstone machines.
   max-primed-tnt-per-chunk: 16
-  # Maximum hostile-category entities allowed per chunk; 0 disables only this cap.
+
+  # Maximum hostile-category entities permitted in a chunk at spawn time.
+  # This includes vanilla hostile mobs and other entities categorized as
+  # monsters. Set to 0 to disable this individual cap.
   max-hostile-entities-per-chunk: 32
-  # Maximum passive land creatures per chunk; spawns beyond the cap are rejected.
+
+  # Maximum passive land creatures (for example cows, pigs, and sheep) allowed
+  # in a chunk. Spawns beyond the limit are rejected, which can limit animal
+  # farms and breeding. Set to 0 to disable this category's cap.
   max-passive-entities-per-chunk: 64
-  # Maximum water creatures, fish, and axolotls per chunk.
+
+  # Maximum water creatures allowed in a chunk, including fish and axolotls.
+  # Spawns beyond the limit are rejected and may affect aquatic farms.
+  # Set to 0 to disable this category's cap.
   max-water-entities-per-chunk: 48
-  # Maximum ambient creatures, primarily bats, per chunk.
+
+  # Maximum ambient creatures (primarily bats) allowed in a chunk.
+  # Spawns beyond the limit are rejected. Set to 0 to disable this cap.
   max-ambient-entities-per-chunk: 16
-  # Include named hostile entities in the cap so naming cannot bypass the limit.
+
+  # Whether hostile entities with custom names count toward the hostile cap.
+  # Keeping this true makes the cap predictable. Set false only if named mobs
+  # should be allowed in addition to the configured hostile limit.
   count-named-hostiles: true
 
 entities:
   cleanup:
-    # Permanently removes eligible, old, persistent hostile mobs; disabled to protect existing worlds.
+    # Enables periodic removal of selected persistent hostile mobs.
+    # This feature is disabled by default because entity removal is permanent
+    # and may affect farms, adventure maps, or intentionally persistent mobs.
     enabled: false
-    # Seconds between scans. Lower values increase main-thread scan work.
+
+    # Delay between cleanup scans, measured in seconds.
+    # Longer intervals reduce scan overhead. Short intervals cause more
+    # frequent world scans and can add work to the Minecraft server thread.
     interval-seconds: 300
-    # Minimum age in seconds before an eligible mob may be removed.
+
+    # Minimum mob age before it becomes eligible for cleanup, in seconds.
+    # A mob must be older than this threshold at scan time. This is a minimum
+    # age, not a promise that a mob will be removed exactly at this time.
     minimum-age-seconds: 21600
-    # Maximum removals in one pass to limit sudden gameplay changes.
+
+    # Upper bound on removals for one scan. This limits sudden cleanup bursts.
+    # Lower values spread removal over multiple scans; higher values clear
+    # eligible mobs more quickly and can cause a noticeable gameplay change.
     max-per-pass: 16
-    # Namespaced entity types eligible for removal. An empty list means all hostile types.
+
+    # Namespaced hostile entity identifiers eligible for cleanup.
+    # The list below targets zombies only. Use entries such as
+    # minecraft:skeleton to include additional types. An empty list means all
+    # hostile entity types, so keep an explicit list unless that is intended.
     entity-types:
       - minecraft:zombie
-    # Protect mobs with custom names; disabling this can remove named entities.
+
+    # Keep mobs with custom names. Disable only if named mobs should also be
+    # eligible for cleanup; their names do not otherwise protect them.
     exclude-named: true
-    # Protect tamed mobs; disabling this can remove player-owned mobs.
+
+    # Keep tamed entities. This protects player-owned entities when applicable.
     exclude-tamed: true
-    # Protect leashed mobs; disabling this can break player setups.
+
+    # Keep leashed entities so cleanup does not break player-built setups.
     exclude-leashed: true
-    # Protect mobs carrying passengers or riding another entity.
+
+    # Keep entities that are riding another entity or carrying passengers.
+    # Disable only when these relationships should not protect a mob.
     exclude-passengers: true
-    # Protect hostile mobs this close to any player, in blocks. 0 disables this protection.
+
+    # Protect mobs within this many blocks of any player.
+    # Distance is measured in 3D. Set to 0 to disable player-distance
+    # protection; named, tamed, leashed, and passenger protections remain
+    # controlled by their separate options above.
     protect-player-radius: 32
 
 plugins:
   chunky-pregeneration:
-    # Downloads a compatible Chunky Paper plugin before plugin discovery so Paper can load it.
+    # Downloads the latest Paper-compatible Chunky release for this Minecraft
+    # version before Paper discovers plugins. Paper loads the resulting JAR.
+    # This requires Internet access at every startup until Chunky is installed.
     enabled: true
+
   modrinth:
-    # Enables operator/console Modrinth plugin search and installation with required dependencies.
+    # Enables /salmon modrinth search and /salmon modrinth install.
+    # Installs are saved in the plugins directory and require a restart.
     enabled: true
+
   metrics:
-    # Collecting plugin timings adds work to every measured handler/task.
-    # Disabled by default; enable only when actively diagnosing performance.
+    # Collect timing statistics for plugin event handlers and Bukkit scheduler
+    # tasks. This adds work to measured calls, so it is disabled by default.
+    # Enable only while diagnosing performance.
     enabled: false
-    # Report interval. Aggregation, sorting, and logging run on SalmonMC Thread.
+
+    # How often to write a summary to the server log, in seconds.
+    # Reporting work (aggregation and formatting) runs on SalmonMC Thread.
     report-interval-seconds: 60
-    # Maximum number of plugins included in each report.
+
+    # Maximum number of highest-total-time plugins included in each report.
+    # This limits log length; it does not limit which plugins are measured.
     max-plugins-in-report: 10
-    # Hide plugins below this total execution time per report window, in milliseconds.
+
+    # Suppress report entries below this total execution time per interval,
+    # measured in milliseconds. Set to 0 to include plugins with any activity.
     minimum-report-ms: 1
-    # Measure registered synchronous and asynchronous plugin event handlers.
+
+    # Measure time spent inside each registered plugin event listener.
+    # Disable this to avoid event-handler timing collection.
     track-event-handlers: true
-    # Measure Bukkit scheduled plugin tasks.
+
+    # Measure time spent running Bukkit-scheduled plugin tasks.
+    # This does not include arbitrary plugin-created threads.
     track-scheduler-tasks: true
-    # Warn when an individual measured call takes this long; 0 disables warnings.
+
+    # Log a slow-call warning when a measured operation takes at least this
+    # many milliseconds. Set to 0 to disable slow-call warnings.
     slow-call-warning-ms: 50
 
 redstone:
-  # Select Paper's redstone engine for all worlds. Alternate Current is
-  # optimized for large dust networks, but changes update order. Choose
-  # vanilla when strict vanilla circuit update behavior is required.
-  # Choices: paper, vanilla, eigencraft, alternate_current.
+  # Redstone wire engine applied to all worlds on startup and Paper config
+  # reload. alternate_current is the fastest bundled engine, but its changed
+  # update order can affect location-dependent or timing-sensitive circuits.
+  # Choices: paper (respect Paper world settings), vanilla, eigencraft,
+  # alternate_current.
   implementation: alternate_current
 
 # ---------------------------------------------------------------------------
@@ -133,6 +220,7 @@ villagers:
     far-radius: 96    # minimum rate beyond this distance
     minimum-tick-rate: 4
 
+performance:
   # Opt-in activation-range overrides. -1 keeps Paper defaults. Lower values
   # reduce AI work for far-away inactive entities; -1 leaves behavior vanilla.
   # SAFETY: lowering activation can delay mob farm spawning and break
@@ -147,12 +235,12 @@ villagers:
     water: -1
     villagers: -1
   chunk-loading:
-    enabled: false
-    player-max-concurrent-chunk-generates: -1
-    player-max-chunk-load-rate: -1.0
-    player-max-chunk-generate-rate: -1.0
+    enabled: true
+    player-max-concurrent-chunk-generates: 1
+    player-max-chunk-load-rate: 32.0
+    player-max-chunk-generate-rate: 3.0
   tracking-ranges:
-    enabled: false
+    enabled: true
     player: -1
     monster: -1
     animal: -1
@@ -160,20 +248,20 @@ villagers:
     display: -1
     other: -1
   collisions:
-    enabled: false
-    max-entity-collisions: -1
+    enabled: true
+    max-entity-collisions: 4
     only-players-collide: false
   tick-send-distance:
     enabled: false
     tick: -1
     send: -1
   world-tuning:
-    enabled: false
+    enabled: true
     item-merge-radius: -1.0
     experience-merge-radius: -1.0
     non-player-arrow-despawn-rate: -1
     hopper-cooldown-when-full: true
-    tick-inactive-villagers: false
+    tick-inactive-villagers: true
     villager-wake-up:
       enabled: false
       max-per-tick: -1
