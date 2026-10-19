@@ -8,11 +8,11 @@
   <a href="https://github.com/firesmasher-c6/Salmon/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/firesmasher-c6/Salmon/build.yml?branch=dev%2F26.2&label=build" alt="Build status"></a>
   <a href="https://github.com/firesmasher-c6/Salmon/releases/latest"><img src="https://img.shields.io/github/v/release/firesmasher-c6/Salmon?label=latest%20release" alt="Latest Salmon release"></a>
   <a href="https://github.com/firesmasher-c6/Salmon"><img src="https://img.shields.io/github/license/firesmasher-c6/Salmon?label=license" alt="GPLv3 license"></a>
-  <img src="https://img.shields.io/badge/Minecraft-1.21.11-3C8527?logo=minecraft&logoColor=white" alt="Minecraft 26.2 (dev)">
+  <img src="https://img.shields.io/badge/Minecraft-26.2-3C8527?logo=minecraft&logoColor=white" alt="Minecraft 26.2">
   <img src="https://img.shields.io/badge/Java-21+-ED8B00?logo=openjdk&logoColor=white" alt="Java 25 or later">
 </p>
 
-**Salmon `26.2-2e-001` is the development line based on Paper 26.2.** Salmon keeps its Paper-compatible server foundation while moving performance and packaging work onto the newer Paper base. It keeps the Paper-compatible server and
+**Salmon `26.2-3e-002` is the development line based on Paper 26.2.** Salmon keeps its Paper-compatible server foundation while moving performance and packaging work onto the newer Paper base. It keeps the Paper-compatible server and
 plugin foundation while adding Salmon-branded configuration, optimization
 controls, diagnostics, and a plugin API.
 
@@ -288,6 +288,6 @@ project details.
 ## Development status (26.2)
 
 - `dev/26.2` is the active development line for Paper 26.2-based Salmon builds.
-- Version label for this line: `26.2-2e-001` (development, not a supported release yet).
+- Version label for this line: `26.2-3e-002` (development, not a supported release yet).
 - Upcoming public builds will be tagged after compile, startup, and regression testing.
 - Please use `dev/26.2` for validation and test feedback, not production deployments.
