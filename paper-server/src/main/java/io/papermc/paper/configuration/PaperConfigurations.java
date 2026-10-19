@@ -227,6 +227,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         GlobalConfiguration configuration = super.initializeGlobalConfiguration(registryAccess);
         GlobalConfiguration.set(configuration);
         this.applySalmonChunkLoading(configuration);
+        this.applySalmonAsyncScheduling(configuration);
         return configuration;
     }
 
@@ -415,6 +416,18 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
         worldConfiguration.hopper.cooldownWhenFull = salmon.options().performanceHopperCooldownWhenFull();
     }
 
+    private void applySalmonAsyncScheduling(final GlobalConfiguration configuration) {
+        final SalmonConfiguration salmon = this.salmonConfiguration();
+        if (!salmon.enabled() || !salmon.options().performanceAsyncSchedulingEnabled()) {
+            return;
+        }
+        if (salmon.options().performanceAsyncIoThreads() >= 0) {
+            configuration.chunkSystem.ioThreads = salmon.options().performanceAsyncIoThreads();
+        }
+        if (salmon.options().performanceAsyncWorkerThreads() >= 0) {
+            configuration.chunkSystem.workerThreads = salmon.options().performanceAsyncWorkerThreads();
+        }
+    }
     private synchronized SalmonConfiguration salmonConfiguration() {
         if (this.salmonConfiguration == null) {
             try {

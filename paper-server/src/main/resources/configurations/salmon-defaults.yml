@@ -267,3 +267,7 @@ performance:
       max-per-tick: -1
       every: -1
       for: -1
+  async-scheduling:
+    enabled: false
+    io-threads: -1
+    worker-threads: -1
